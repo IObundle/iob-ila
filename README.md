@@ -2,13 +2,10 @@
 
 ## What is this repository for? ##
 
-The IObundle UART is a RISC-V-based Peripheral written in Verilog, which users
-can download for free, modify, simulate and implement in FPGA or ASIC. It is
-written in Verilog and includes a C software driver.  The IObundle UART is a
-very compact IP that works at high clock rates if needed. It supports
-full-duplex operation and a configurable baud rate. The IObundle UART has a
-fixed configuration for the Start and Stop bits. More flexible licensable
-commercial versions are available upon request.
+The IObundle ILA is a RISC-V-based Peripheral. It is
+written in Verilog and includes a C software driver. It allows the sampling
+of any signal from the system and provides a interface that allows a RISC-V
+processor to access the sampled values.
 
 ## Simulate
 
