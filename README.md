@@ -39,7 +39,7 @@ export XILINXPATH=/path/to/xilinx/fpga/tools
 export LM_LICENSE_FILE=port@host:lic_or_dat_file
 ```
 
-To generate an FPGA neltlist for the UART core type:
+To generate an FPGA neltlist for the ILA core type:
 ```
 make fpga [FPGA_FAMILY=<fpga family>]
 ```

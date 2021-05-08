@@ -1,24 +1,18 @@
 //instantiate core in system
 
    //
-   // UART
+   // ILA
    //
 
-   iob_uart uart
+   iob_ila ila
      (
-      //RS232 interface
-      .txd       (uart_txd),
-      .rxd       (uart_rxd),
-      .rts       (uart_rts),
-      .cts       (uart_cts),
-      
       //CPU interface
       .clk       (clk),
       .rst       (reset),
-      .valid(slaves_req[`valid(`UART)]),
-      .address(slaves_req[`address(`UART,`UART_ADDR_W+2)-2]),
-      .wdata(slaves_req[`wdata(`UART)-(`DATA_W-`UART_WDATA_W)]),
-      .wstrb(slaves_req[`wstrb(`UART)]),
-      .rdata(slaves_resp[`rdata(`UART)]),
-      .ready(slaves_resp[`ready(`UART)])
+      .valid(slaves_req[`valid(`ILA)]),
+      .address(slaves_req[`address(`ILA,`ILA_ADDR_W+2)-2]),
+      .wdata(slaves_req[`wdata(`ILA)-(`DATA_W-`ILA_WDATA_W)]),
+      .wstrb(slaves_req[`wstrb(`ILA)]),
+      .rdata(slaves_resp[`rdata(`ILA)]),
+      .ready(slaves_resp[`ready(`ILA)])
       );

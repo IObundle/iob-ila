@@ -1,0 +1,107 @@
+$date
+	Fri May  7 22:06:16 2021
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module ila_tb $end
+$var reg 1 ! clk $end
+$var reg 1 " rst $end
+$scope module uut $end
+$var wire 1 ! clk $end
+$var wire 1 " rst $end
+$var wire 1 # rst_int $end
+$upscope $end
+$upscope $end
+$scope module iob_ila $end
+$var wire 1 $ ILA_DATA $end
+$var wire 3 % address [2:0] $end
+$var wire 1 & clk $end
+$var wire 32 ' rdata [31:0] $end
+$var wire 1 ( ready $end
+$var wire 1 ) rst $end
+$var wire 1 * valid $end
+$var wire 16 + wdata [15:0] $end
+$var wire 4 , wstrb [3:0] $end
+$var reg 1 - ILA_ENABLE $end
+$var reg 1 . ILA_RESET $end
+$var reg 32 / rdata_int [31:0] $end
+$var reg 1 0 ready_int $end
+$scope module ila_core0 $end
+$var wire 1 & clk $end
+$var wire 1 ) rst $end
+$var wire 1 1 rst_int $end
+$upscope $end
+$upscope $end
+$scope module merge $end
+$var wire 1 2 clk $end
+$var wire 138 3 m_req [137:0] $end
+$var wire 1 4 rst $end
+$var wire 33 5 s_resp [32:0] $end
+$var reg 66 6 m_resp [65:0] $end
+$var reg 69 7 s_req [68:0] $end
+$var reg 1 8 sel $end
+$var reg 1 9 sel_en $end
+$var reg 1 : sel_reg $end
+$var integer 32 ; i [31:0] $end
+$var integer 32 < j [31:0] $end
+$var integer 32 = k [31:0] $end
+$upscope $end
+$scope module split $end
+$var wire 1 > clk $end
+$var wire 69 ? m_req [68:0] $end
+$var wire 1 @ rst $end
+$var wire 66 A s_resp [65:0] $end
+$var wire 2 B s_sel [1:0] $end
+$var reg 33 C m_resp [32:0] $end
+$var reg 138 D s_req [137:0] $end
+$var reg 2 E s_sel_reg [1:0] $end
+$var integer 32 F i [31:0] $end
+$var integer 32 G j [31:0] $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b10 G
+b10 F
+bx E
+b0 D
+b0 C
+b0x B
+bz A
+z@
+bz ?
+z>
+b10 =
+b10 <
+b10 ;
+x:
+x9
+08
+bz 7
+b0 6
+bz 5
+z4
+bz 3
+z2
+z1
+x0
+b0 /
+x.
+x-
+bz ,
+bz +
+z*
+z)
+x(
+b0 '
+z&
+bz %
+z$
+1#
+1"
+1!
+$end

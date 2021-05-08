@@ -1,11 +1,10 @@
-hardware/include/UARTsw_reg_gen.v
-hardware/include/UARTsw_reg.vh
+hardware/include/ILAsw_reg_gen.v
+hardware/include/ILAsw_reg.vh
 software/i2s_sw_reg.h
 document/figures/bd.pdf
 document/figures/bg.pdf
 document/figures/datadelay_3.pdf
 document/figures/fsync_w_2.pdf
-document/figures/uart.pdf
 document/figures/inverted_bclk.pdf
 document/figures/inverted_fsync.pdf
 document/figures/mo.pdf
@@ -13,7 +12,7 @@ document/figures/n_channel_3.pdf
 document/figures/rx_master.pdf
 document/figures/sample_w_16.pdf
 document/figures/symb.pdf
-document/ug/UART.fit.summary
+document/ug/ILA.fit.summary
 document/ug/alt_results.tex
 document/ug/bd_tab.tex
 document/ug/cpu_axi4_m_is_tab.tex
@@ -43,7 +42,7 @@ document/ug/version.txt
 document/figures/Logo.png
 document/ug/quartus.log
 hardware/simulation/icarus/a.out
-hardware/simulation/icarus/uart.vcd
+hardware/simulation/icarus/ila.vcd
 hardware/simulation/icarus/sw_reg_w.vh
 hardware/simulation/icarus/tmp
 hardware/simulation/ncsim/tmp

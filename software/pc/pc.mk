@@ -1,5 +1,5 @@
-#uart common parameters
-include $(UART_DIR)/software/software.mk
+#ila common parameters
+include $(ILA_DIR)/software/software.mk
 
 #pc sources
-SRC+=$(UART_SW_DIR)/pc/iob-uart-platform.c
+SRC+=$(ILA_SW_DIR)/pc/iob-ila.c
