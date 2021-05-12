@@ -1,0 +1,46 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Mon May 10 01:19:52 2021
+[*]
+[dumpfile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/ila.vcd"
+[dumpfile_mtime] "Mon May 10 01:07:34 2021"
+[dumpfile_size] 4136
+[savefile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/waves.gtkw"
+[timestart] 0
+[size] 1366 713
+[pos] -1 -1
+*-14.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] ila_tb.
+[sst_width] 223
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 192
+@200
+-ILA
+@28
+ila_tb.uut.enabled
+ila_tb.uut.full
+@23
+ila_tb.uut.index[7:0]
+@22
+ila_tb.uut.n_samples[7:0]
+@28
+ila_tb.uut.rst_int
+ila_tb.uut.rst_soft
+@22
+ila_tb.uut.samples[7:0]
+@28
+ila_tb.uut.sampling_clk
+@22
+ila_tb.uut.signal[7:0]
+@28
+ila_tb.uut.trigger
+@22
+ila_tb.uut.value[7:0]
+@200
+-SYSTEM
+@28
+ila_tb.clk
+ila_tb.rst
+[pattern_trace] 1
+[pattern_trace] 0

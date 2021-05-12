@@ -14,5 +14,9 @@
       .wdata(slaves_req[`wdata(`ILA)-(`DATA_W-`ILA_WDATA_W)]),
       .wstrb(slaves_req[`wstrb(`ILA)]),
       .rdata(slaves_resp[`rdata(`ILA)]),
-      .ready(slaves_resp[`ready(`ILA)])
+      .ready(slaves_resp[`ready(`ILA)]),
+
+      .signal(32'h0 | {RX_DATA,TX_DATA}),
+      .trigger(TX_EN | RX_DV),
+      .sampling_clk(RX_CLK)
       );

@@ -13,7 +13,7 @@ ILA_DOC_DIR:=$(ILA_DIR)/document
 ILA_SUBMODULES_DIR:=$(ILA_DIR)/submodules
 
 #SUBMODULES
-ILA_SUBMODULES:=INTERCON LIB TEX
+ILA_SUBMODULES:=INTERCON LIB TEX MEM
 $(foreach p, $(ILA_SUBMODULES), $(eval $p_DIR ?=$(ILA_SUBMODULES_DIR)/$p))
 
 #host where this is running

@@ -21,9 +21,12 @@ INCLUDE+=$(incdir) $(ILA_HW_DIR)/include
 #included files
 VHDR+=$(wildcard $(ILA_HW_DIR)/include/*.vh)
 VHDR+=$(ILA_HW_DIR)/include/ILAsw_reg_gen.v
+
 #sources
 VSRC+=$(ILA_HW_DIR)/src/ila_core.v $(ILA_HW_DIR)/src/iob_ila.v
 
+#mem
+VSRC+=$(MEM_DIR)/2p_assim_async_mem/iob_2p_async_mem.v
 
 #cpu accessible registers
 $(ILA_HW_DIR)/include/ILAsw_reg_gen.v $(ILA_HW_DIR)/include/ILAsw_reg.vh: $(ILA_HW_DIR)/include/ILAsw_reg.v
