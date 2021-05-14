@@ -1,54 +1,46 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Tue Feb  9 15:11:05 2021
+[*] Mon May 10 01:19:52 2021
 [*]
-[dumpfile] "/home/jsousa/sandbox/iob-soc/submodules/UART/hardware/simulation/icarus/uart.vcd"
-[dumpfile_mtime] "Tue Feb  9 15:09:33 2021"
-[dumpfile_size] 15914733
-[savefile] "/home/jsousa/sandbox/iob-soc/submodules/UART/hardware/simulation/waves.gtkw"
+[dumpfile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/ila.vcd"
+[dumpfile_mtime] "Mon May 10 01:07:34 2021"
+[dumpfile_size] 4136
+[savefile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/waves.gtkw"
 [timestart] 0
-[size] 1918 1026
+[size] 1366 713
 [pos] -1 -1
-*-22.807814 21100000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] uart_tb.
-[sst_width] 324
-[signals_width] 264
+*-14.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] ila_tb.
+[sst_width] 223
+[signals_width] 150
 [sst_expanded] 1
-[sst_vpaned_height] 107
+[sst_vpaned_height] 192
 @200
--TB
+-ILA
 @28
-uart_tb.rst
-uart_tb.clk
-@420
-uart_tb.i
-@200
--CORE
+ila_tb.uut.enabled
+ila_tb.uut.full
+@23
+ila_tb.uut.index[7:0]
 @22
-uart_tb.uut.bit_duration[15:0]
-@200
--tx
+ila_tb.uut.n_samples[7:0]
 @28
-uart_tb.uut.tx_en
-uart_tb.uut.txd
-uart_tb.uut.tx_ready
-uart_tb.uut.tx_pc[1:0]
+ila_tb.uut.rst_int
+ila_tb.uut.rst_soft
 @22
-uart_tb.uut.tx_cyclecnt[15:0]
-uart_tb.uut.tx_bitcnt[3:0]
-@200
--rx
+ila_tb.uut.samples[7:0]
 @28
-uart_tb.uut.rx_en
-uart_tb.uut.rxd
-@29
-uart_tb.uut.rx_ready
-@24
-uart_tb.uut.rx_pc[2:0]
+ila_tb.uut.sampling_clk
 @22
-uart_tb.uut.rx_cyclecnt[15:0]
-uart_tb.uut.rx_bitcnt[3:0]
+ila_tb.uut.signal[7:0]
 @28
-uart_tb.uut.rx_data[7:0]
+ila_tb.uut.trigger
+@22
+ila_tb.uut.value[7:0]
+@200
+-SYSTEM
+@28
+ila_tb.clk
+ila_tb.rst
 [pattern_trace] 1
 [pattern_trace] 0

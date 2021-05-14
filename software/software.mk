@@ -1,14 +1,11 @@
-include $(UART_DIR)/core.mk
+include $(ILA_DIR)/core.mk
 
 #include
-INCLUDE+=-I$(UART_SW_DIR)
+INCLUDE+=-I$(ILA_SW_DIR)
 
 #headers
-HDR+=$(UART_SW_DIR)/*.h
+HDR+=$(ILA_SW_DIR)/iob-ila.h $(ILA_SW_DIR)/ILAsw_reg.h
 
-#sources
-SRC+=$(UART_SW_DIR)/iob-uart.c
-
-$($UART_SW_DIR)/UARTsw_reg.h: $(UART_HW_DIR)/include/UARTsw_reg.v
+$(ILA_SW_DIR)/ILAsw_reg.h: $(ILA_HW_DIR)/include/ILAsw_reg.v
 	$(LIB_DIR)/software/mkregs.py $< SW
 	mv $(CORE_NAME)sw_reg.h $@

@@ -1,5 +1,5 @@
-UART_DIR:=../../..
-include $(UART_DIR)/hardware/hardware.mk
+ILA_DIR:=../../..
+include $(ILA_DIR)/hardware/hardware.mk
 
 FPGA_VSRC=$(addprefix ../, $(VSRC) )
 FPGA_VHDR=$(addprefix ../, $(VHDR) )

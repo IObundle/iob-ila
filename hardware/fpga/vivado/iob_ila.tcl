@@ -19,7 +19,7 @@ set_property part $PART [current_project]
 
 synth_design -include_dirs $HW_INCLUDE -verilog_define $HW_DEFINE -part $PART -top $TOP -mode out_of_context -flatten_hierarchy none -verbose
 
-read_xdc ../iob_uart.xdc
+read_xdc ../iob_ila.xdc
 
 opt_design
 place_design

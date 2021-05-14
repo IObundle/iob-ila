@@ -1,8 +1,8 @@
-UART_DIR:=../..
-CORE_DIR:=$(UART_DIR)
+ILA_DIR:=../..
+CORE_DIR:=$(ILA_DIR)
 
-include $(UART_DIR)/core.mk
+include $(ILA_DIR)/core.mk
 
-include $(UART_DIR)/submodules/TEX/document/document.mk
+include $(ILA_DIR)/submodules/TEX/document/document.mk
 
 clean: texclean

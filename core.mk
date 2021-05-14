@@ -2,19 +2,19 @@
 # CORE DEFINITIONS FILE
 #
 
-CORE_NAME:=UART
+CORE_NAME:=ILA
 IS_CORE:=1
 USE_NETLIST ?=0
 
-#UART PATHS
-UART_HW_DIR:=$(UART_DIR)/hardware
-UART_SW_DIR:=$(UART_DIR)/software
-UART_DOC_DIR:=$(UART_DIR)/document
-UART_SUBMODULES_DIR:=$(UART_DIR)/submodules
+#ILA PATHS
+ILA_HW_DIR:=$(ILA_DIR)/hardware
+ILA_SW_DIR:=$(ILA_DIR)/software
+ILA_DOC_DIR:=$(ILA_DIR)/document
+ILA_SUBMODULES_DIR:=$(ILA_DIR)/submodules
 
 #SUBMODULES
-UART_SUBMODULES:=INTERCON LIB TEX
-$(foreach p, $(UART_SUBMODULES), $(eval $p_DIR ?=$(UART_SUBMODULES_DIR)/$p))
+ILA_SUBMODULES:=INTERCON LIB TEX MEM
+$(foreach p, $(ILA_SUBMODULES), $(eval $p_DIR ?=$(ILA_SUBMODULES_DIR)/$p))
 
 #host where this is running
 HOSTNAME=$(shell hostname)
@@ -22,7 +22,7 @@ HOSTNAME=$(shell hostname)
 #
 #SIMULATION
 #
-SIM_DIR ?=$(UART_HW_DIR)/simulation
+SIM_DIR ?=$(ILA_HW_DIR)/simulation
 
 #
 #FPGA
@@ -32,7 +32,7 @@ FPGA_FAMILY ?=CYCLONEV-GT
 #FPGA_FAMILY ?=XCKU
 
 #FPGA_SERVER :=localhost
-REMOTE_ROOT_DIR ?= sandbox/iob-soc/submodules/UART
+REMOTE_ROOT_DIR ?= sandbox/iob-soc/submodules/ILA
 FPGA_SERVER ?=pudim-flan.iobundle.com
 FPGA_USER ?= $(USER)
 
@@ -43,7 +43,7 @@ else
 	FPGA_COMP:=quartus
 	FPGA_PART:=5CGTFD9E5F35C7
 endif
-FPGA_DIR ?=$(UART_HW_DIR)/fpga/$(FPGA_COMP)
+FPGA_DIR ?=$(ILA_HW_DIR)/fpga/$(FPGA_COMP)
 
 ifeq ($(FPGA_COMP),vivado)
 FPGA_LOG:=vivado.log

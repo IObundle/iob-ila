@@ -1,4 +1,4 @@
-include $(UART_DIR)/core.mk
+include $(ILA_DIR)/core.mk
 
 #SUBMODULE HARDWARE
 #intercon
@@ -15,24 +15,27 @@ VHDR+=$(wildcard $(LIB_DIR)/hardware/include/*.vh)
 endif
 
 #hardware include dirs
-INCLUDE+=$(incdir) $(UART_HW_DIR)/include
+INCLUDE+=$(incdir) $(ILA_HW_DIR)/include
 
-#UART HARDWARE
+#ILA HARDWARE
 #included files
-VHDR+=$(wildcard $(UART_HW_DIR)/include/*.vh)
-VHDR+=$(UART_HW_DIR)/include/UARTsw_reg_gen.v
-#sources
-VSRC+=$(UART_HW_DIR)/src/uart_core.v $(UART_HW_DIR)/src/iob_uart.v
+VHDR+=$(wildcard $(ILA_HW_DIR)/include/*.vh)
+VHDR+=$(ILA_HW_DIR)/include/ILAsw_reg_gen.v
 
+#sources
+VSRC+=$(ILA_HW_DIR)/src/ila_core.v $(ILA_HW_DIR)/src/iob_ila.v
+
+#mem
+VSRC+=$(MEM_DIR)/2p_assim_async_mem/iob_2p_async_mem.v
 
 #cpu accessible registers
-$(UART_HW_DIR)/include/UARTsw_reg_gen.v $(UART_HW_DIR)/include/UARTsw_reg.vh: $(UART_HW_DIR)/include/UARTsw_reg.v
+$(ILA_HW_DIR)/include/ILAsw_reg_gen.v $(ILA_HW_DIR)/include/ILAsw_reg.vh: $(ILA_HW_DIR)/include/ILAsw_reg.v
 	$(LIB_DIR)/software/mkregs.py $< HW
-	mv UARTsw_reg_gen.v $(UART_HW_DIR)/include
-	mv UARTsw_reg.vh $(UART_HW_DIR)/include
+	mv ILAsw_reg_gen.v $(ILA_HW_DIR)/include
+	mv ILAsw_reg.vh $(ILA_HW_DIR)/include
 
-uart_clean_hw:
-	@rm -rf $(UART_HW_DIR)/include/UARTsw_reg_gen.v $(UART_HW_DIR)/include/UARTsw_reg.vh tmp $(UART_HW_DIR)/fpga/vivado/XCKU $(UART_HW_DIR)/fpga/quartus/CYCLONEV-GT
+ila_clean_hw:
+	@rm -rf $(ILA_HW_DIR)/include/ILAsw_reg_gen.v $(ILA_HW_DIR)/include/ILAsw_reg.vh tmp $(ILA_HW_DIR)/fpga/vivado/XCKU $(ILA_HW_DIR)/fpga/quartus/CYCLONEV-GT
 
-.PHONY: uart_clean_hw
+.PHONY: ila_clean_hw
 

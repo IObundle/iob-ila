@@ -1,20 +1,19 @@
 //add core test module in testbench
 
-   iob_uart uart_tb
+   iob_ila ila_tb
      (
       .clk       (clk),
       .rst       (reset),
       
-      .valid     (uart_valid),
-      .address   (uart_addr),
-      .wdata     (uart_wdata[`UART_WDATA_W-1:0]),
-      .wstrb     (uart_wstrb),
-      .rdata     (uart_rdata),
-      .ready     (uart_ready),
-      
-      .txd       (uart_rxd),
-      .rxd       (uart_txd),
-      .rts       (uart_cts),
-      .cts       (uart_rts)
+      .valid     (ila_valid),
+      .address   (ila_addr),
+      .wdata     (ila_wdata[`ILA_WDATA_W-1:0]),
+      .wstrb     (ila_wstrb),
+      .rdata     (ila_rdata),
+      .ready     (ila_ready),
+
+      .signal(ila_signal),
+      .trigger(ila_trigger),
+      .sampling_clk(ila_sampling_clk)
       );
 

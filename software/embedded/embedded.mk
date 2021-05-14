@@ -1,10 +1,4 @@
-include $(UART_DIR)/software/software.mk
-
-#submodule
-ifneq (INTERCON,$(filter INTERCON, $(SUBMODULES)))
-SUBMODULES+=INTERCON
-include $(INTERCON_DIR)/software/software.mk
-endif
+include $(ILA_DIR)/software/software.mk
 
 #embeded sources
-SRC+=$(UART_SW_DIR)/embedded/iob-uart-platform.c
+SRC+=$(ILA_SW_DIR)/embedded/iob-ila.c
