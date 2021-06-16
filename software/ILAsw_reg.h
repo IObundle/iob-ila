@@ -2,7 +2,13 @@
 
 //register address mapping
 #define ILA_SOFTRESET 0
-#define ILA_ENABLED 1
-#define ILA_INDEX 2
-#define ILA_SAMPLES 3
-#define ILA_DATA 4
+#define ILA_TRIGGER_TYPE 1
+#define ILA_TRIGGER_NEGATE 2
+#define ILA_TRIGGER_MASK 3
+#define ILA_DELAY_TRIGGER 4
+#define ILA_DELAY_SIGNAL 5
+#define ILA_REDUCE_TYPE 6
+#define ILA_INDEX 7
+#define ILA_SIGNAL_SELECT 8
+#define ILA_DATA 9
+#define ILA_SAMPLES 10

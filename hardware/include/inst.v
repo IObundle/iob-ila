@@ -16,7 +16,7 @@
       .rdata(slaves_resp[`rdata(`ILA)]),
       .ready(slaves_resp[`ready(`ILA)]),
 
-      .signal(32'h0 | {RX_DATA,TX_DATA}),
-      .trigger(TX_EN | RX_DV),
-      .sampling_clk(RX_CLK)
+      .signal(eth.tx.crc_out),
+      .trigger(eth.tx.crc_en),
+      .sampling_clk(TX_CLK)
       );

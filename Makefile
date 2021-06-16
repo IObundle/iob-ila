@@ -43,11 +43,8 @@ endif
 # DOCUMENT
 #
 
-doc: hardware/fpga/quartus/CYCLONEV-GT/quartus.log hardware/fpga/vivado/XCKU/vivado.log
+doc: hardware/fpga/vivado/XCKU/vivado.log
 	make -C document/$(DOC_TYPE) $(DOC_TYPE).pdf
-
-hardware/fpga/quartus/CYCLONEV-GT/quartus.log:
-	make fpga FPGA_FAMILY=CYCLONEV-GT
 
 hardware/fpga/vivado/XCKU/vivado.log:
 	make fpga FPGA_FAMILY=XCKU
