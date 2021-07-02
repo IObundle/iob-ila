@@ -53,11 +53,18 @@ module iob_ila
       .delay_signal(ILA_DELAY_SIGNAL),
       .reduce_type(ILA_REDUCE_TYPE),
 
+      // Mask for special triggers      
+      .special_trigger_mask(ILA_SPECIAL_TRIGGER_MASK),
+
       // Software side access to values sampled
       .index(ILA_INDEX),
       .samples(ILA_SAMPLES),
       .value(ILA_DATA),
       .value_select(ILA_SIGNAL_SELECT),
+
+      .current_value(ILA_CURRENT_DATA),
+      .trigger_value(ILA_CURRENT_TRIGGERS),
+      .active_triggers(ILA_CURRENT_ACTIVE_TRIGGERS),
 
       // Enabled reset and system clk
       .rst_soft(ILA_SOFTRESET),

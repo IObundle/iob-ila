@@ -15,11 +15,13 @@ module ila_tb;
 
    reg       rst_soft;
 
+   reg       ila_special_trigger_mask;
+
    reg       ila_trigger,ila_trigger2;
    reg[7:0]  ila_signal,ila_index;
 
    reg       ila_value_select;
-   reg [1:0] ila_value_select2;
+   reg[1:0]  ila_value_select2;
 
    initial begin
 
@@ -37,6 +39,7 @@ module ila_tb;
       ila_index = 0;
       ila_value_select = 0;
       ila_value_select2 = 0;
+      ila_special_trigger_mask = 0;
 
       // deassert hard reset
       #100 @(posedge clk) #1 rst = 0;
@@ -97,9 +100,65 @@ module ila_tb;
       ila_value_select = 1'b0;
       ila_value_select2 = 2'h0;
 
-      for(i = 0; i < 20; i = i + 1)
+      for(i = 0; i < 5; i = i + 1)
         @(posedge clk) #1;
 
+      rst = 1;
+      ila_signal = 0;
+      ila_trigger = 0;
+      ila_trigger2 = 0;
+      ila_signal = 0;
+      ila_index = 0;
+      ila_value_select = 0;
+      ila_value_select2 = 0;
+      ila_special_trigger_mask = 1'b1;
+
+      for(i = 0; i < 5; i = i + 1)
+        @(posedge clk) #1;
+
+      rst = 0;
+
+      for(i = 0; i < 5; i = i + 1)
+        @(posedge clk) #1;
+
+      ila_signal = 1;
+
+      @(posedge clk) #1;
+
+      ila_trigger = 1'b1;
+      ila_trigger2 = 1'b1;
+
+      @(posedge clk) #1;
+
+      ila_signal = 2;
+
+      @(posedge clk) #1;
+
+      @(posedge clk) #1;
+
+      ila_trigger = 1'b0;
+      ila_trigger2 = 1'b0;
+
+      @(posedge clk) #1;
+      
+      ila_signal = 3;
+
+      @(posedge clk) #1;
+
+      ila_signal = 2;
+
+      @(posedge clk) #1;
+
+      ila_trigger = 1'b1;
+      ila_trigger2 = 1'b1;
+
+      @(posedge clk) #1;
+
+      ila_trigger = 1'b0;
+      ila_trigger2 = 1'b0;
+
+      for(i = 0; i < 20; i = i + 1)
+        @(posedge clk) #1;
       $finish;
    end 
 
@@ -130,6 +189,8 @@ module ila_tb;
       .delay_trigger(DELAY_TRIGGER), \
       .delay_signal(DELAY_SIGNAL), \
       .reduce_type(`ILA_REDUCE_OR), \
+      \// Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask), \
        \// Software side access to values sampled
       .index(ila_index), \
       .samples(), \
@@ -170,6 +231,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_AND),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -200,6 +263,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_OR),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -230,6 +295,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_AND),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -260,6 +327,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_AND),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -290,6 +359,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_OR),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -320,6 +391,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_AND),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -350,6 +423,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_OR),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -364,7 +439,7 @@ module ila_tb;
    ila_core #(
      .DATA_W(32),  // Interface expects 32 bits
      .BUFFER_W(8),
-     .SIGNAL_W(128), // Signal takes 64 bytes
+     .SIGNAL_W(128), // Signal takes 128 bytes
      .TRIGGER_W(1) // Only one trigger
      ) 
      uut_128_BITS_SIGNAL_SINGLE_NO_DELAY
@@ -380,6 +455,8 @@ module ila_tb;
       .delay_trigger(1'b0),
       .delay_signal(1'b0),
       .reduce_type(`ILA_REDUCE_OR),
+      // Mask for special triggers
+      .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
       .index(ila_index),
       .samples(),
@@ -390,6 +467,5 @@ module ila_tb;
       .clk(clk),
       .rst(rst)
      );
-
 endmodule
 

@@ -5,6 +5,8 @@
 
 `define CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W) (DATA_W >= SIGNAL_W ? 1 : $clog2(SIGNAL_W / DATA_W))
 
+// TODO: Change memory allocation from a single buffer to multiple buffers of 32 bits or smaller (the board as 32 bit or 16 bit blocks, so it would be multiple blocks of 32 and one block of 16, if needed)
+
 module ila_core 
   #(
     parameter DATA_W = `ILA_RDATA_W,
@@ -13,12 +15,12 @@ module ila_core
     parameter TRIGGER_W = 1
   )
   (
-      // Trigger and signals to sample
+    // Trigger and signals to sample
     `INPUT(signal,SIGNAL_W),
     `INPUT(trigger,TRIGGER_W),
     `INPUT(sampling_clk,1),
 
-      // Trigger and signal configuration
+    // Trigger and signal configuration
     `INPUT(trigger_type,TRIGGER_W),
     `INPUT(negate_trigger,TRIGGER_W),
     `INPUT(trigger_mask,TRIGGER_W),
@@ -26,11 +28,19 @@ module ila_core
     `INPUT(delay_signal,1),
     `INPUT(reduce_type,1),
 
+     // Mask for special triggers
+    `INPUT(special_trigger_mask, 1),
+
       // Software side access to values sampled
     `INPUT(index,BUFFER_W),
     `OUTPUT(samples,BUFFER_W),
     `OUTPUT(value,DATA_W),
     `INPUT(value_select,`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)),
+
+    // Software side access to current values
+    output reg [DATA_W-1:0] current_value,
+    output reg [TRIGGER_W-1:0] trigger_value,
+    output reg [TRIGGER_W-1:0] active_triggers,
 
     // Enabled reset and system clk
     `INPUT(rst_soft,1),
@@ -71,11 +81,11 @@ module ila_core
   wire trigger_reduce_out = (reduce_type == `ILA_REDUCE_OR ? trigger_reduce_or : trigger_reduce_and);
 
   // Selects between current trigger or delayed trigger
-  reg previous_trigger,write_en;
+  reg previous_trigger,trigger_enable_wr;
   `REG_AR(sampling_clk,rst_int,0,previous_trigger,trigger_reduce_out)
 
   wire final_trigger = (delay_trigger ? previous_trigger : trigger_reduce_out);
-  `REG_AR(sampling_clk,rst_int,0,write_en,final_trigger) // Add a "pipeline" register to the trigger
+  `REG_AR(sampling_clk,rst_int,0,trigger_enable_wr,final_trigger) // Add a "pipeline" register to the trigger
 
   // SIGNAL LOGIC
   reg [SIGNAL_W-1:0] previous_signal,signal_data;
@@ -90,7 +100,11 @@ module ila_core
   // INDEX LOGIC
   `SIGNAL(n_samples,BUFFER_W)
   
-  // Memory write index logic 
+  // Memory write index logic
+  wire different_signal_enable_wr;
+
+  wire write_en = (trigger_enable_wr & different_signal_enable_wr);
+
   wire full = ((&n_samples) == 1'b1);
   `ACC_ARE(sampling_clk,rst_int,0,write_en && !full,n_samples,1)
 
@@ -126,25 +140,94 @@ module ila_core
 
   `SIGNAL2OUT(samples,sys_samples)
 
+  // Special trigger - Different signal logic
+  reg [SIGNAL_W-1:0] last_written_signal;
+
+  assign different_signal_enable_wr = ((last_written_signal != signal_data) | !special_trigger_mask[0]);
+
+  always @(posedge clk,posedge rst_int)
+  begin
+    if(rst_int)
+    begin
+      last_written_signal <= 0;
+    end
+    else if(write_en)
+    begin
+        last_written_signal <= signal_data;
+    end
+  end
+
   // Partition signal into multiple parts to fit DATA_W
   `SIGNAL(value_out,DATA_W)
-  `SIGNAL2OUT(value,value_out)
 
   integer ii;
+  always @(posedge clk,posedge rst)
+  begin
+    if(rst) begin
+      value_out <= 0;
+    end else begin
+      if(DATA_W >= SIGNAL_W)
+        value_out <= data_out;
+      else begin
+        for(ii = 0; ii < (SIGNAL_W / DATA_W); ii = ii + 1)
+        begin
+          if(value_select == ii)
+          begin
+            value_out <= data_out[32*ii +: 32];
+          end
+        end
+      end      
+    end
+  end
+
+  `SIGNAL2OUT(value,value_out)
+
+  // CURRENT VALUE LOGIC
+
+   `define SIG_CLK(W,IN,OUT,CLK,RST) \
+     reg [W-1:0] OUT``_sync_0,OUT``_sync_1; \
+    always @(posedge CLK, posedge RST) \
+      if(RST) begin \
+        OUT``_sync_0 <= 0; \
+        OUT``_sync_1 <= 0; \
+      end else begin \
+        OUT``_sync_0 <= IN; \
+        OUT``_sync_1 <= OUT``_sync_0; \
+      end \
+      `COMB OUT = OUT``_sync_1;
+
+  reg [TRIGGER_W-1:0] trigger_value_reg;
+  `REG_AR(sampling_clk,rst_int,0,trigger_value_reg,trigger)
+
+  `SIG_CLK(TRIGGER_W,trigger_value_reg,trigger_value,sampling_clk,rst)
+
+  reg [TRIGGER_W-1:0] active_trigger_reg;
+  `REG_AR(sampling_clk,rst_int,0,active_trigger_reg,trigger_out)
+
+  `SIG_CLK(TRIGGER_W,active_trigger_reg,active_triggers,sampling_clk,rst)
+
+  // Partition current signal into various pieces
+  integer iii;
+  reg [DATA_W:0] current_signal;
   always @*
   begin
-    value_out = 32'h0;
+    current_signal = 32'h0;
     if(DATA_W >= SIGNAL_W)
-      value_out = data_out;
+      current_signal = signal;
     else begin
-      for(ii = 0; ii < (SIGNAL_W / DATA_W); ii = ii + 1)
+      for(iii = 0; iii < (SIGNAL_W / DATA_W); iii = iii + 1)
       begin
-        if(value_select == ii)
+        if(value_select == iii)
         begin
-          value_out = data_out[32*ii +: 32];
+          current_signal = signal[32*iii +: 32];
         end
       end
     end
   end
+
+  reg [DATA_W-1:0] signal_value_reg;
+  `REG_AR(sampling_clk,rst_int,0,signal_value_reg,current_signal)
+
+  `SIG_CLK(TRIGGER_W,signal_value_reg,current_value,sampling_clk,rst)
 
 endmodule
