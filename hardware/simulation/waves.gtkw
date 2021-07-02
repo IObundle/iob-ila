@@ -1,46 +1,153 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Mon May 10 01:19:52 2021
+[*] Tue Jun 15 19:52:15 2021
 [*]
 [dumpfile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/ila.vcd"
-[dumpfile_mtime] "Mon May 10 01:07:34 2021"
-[dumpfile_size] 4136
+[dumpfile_mtime] "Tue Jun 15 19:50:50 2021"
+[dumpfile_size] 74428
 [savefile] "/home/ruben/ecomp/iob-soc-eth/submodules/ILA/hardware/simulation/waves.gtkw"
-[timestart] 0
+[timestart] 196400
 [size] 1366 713
 [pos] -1 -1
-*-14.000000 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 275900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] ila_tb.
-[sst_width] 223
-[signals_width] 150
+[treeopen] ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.
+[treeopen] ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.genblk1[0].
+[treeopen] ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.genblk1[1].
+[sst_width] 490
+[signals_width] 447
 [sst_expanded] 1
 [sst_vpaned_height] 192
-@200
--ILA
-@28
-ila_tb.uut.enabled
-ila_tb.uut.full
-@23
-ila_tb.uut.index[7:0]
-@22
-ila_tb.uut.n_samples[7:0]
-@28
-ila_tb.uut.rst_int
-ila_tb.uut.rst_soft
-@22
-ila_tb.uut.samples[7:0]
-@28
-ila_tb.uut.sampling_clk
-@22
-ila_tb.uut.signal[7:0]
-@28
-ila_tb.uut.trigger
-@22
-ila_tb.uut.value[7:0]
 @200
 -SYSTEM
 @28
 ila_tb.clk
 ila_tb.rst
+@200
+-ILA
+@22
+ila_tb.ila_signal[7:0]
+@28
+ila_tb.ila_trigger
+ila_tb.ila_trigger2
+@200
+-SINGLE_SIGNAL_DELAY
+@22
+ila_tb.uut_SINGLE_SIGNAL_DELAY.value[31:0]
+ila_tb.uut_SINGLE_SIGNAL_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_SIGNAL_DELAY.final_trigger
+@200
+-SINGLE_NO_DELAY
+@22
+ila_tb.uut_SINGLE_NO_DELAY.value[31:0]
+ila_tb.uut_SINGLE_NO_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_NO_DELAY.final_trigger
+@200
+-SINGLE_TRIGGER_DELAY
+@22
+ila_tb.uut_SINGLE_TRIGGER_DELAY.value[31:0]
+ila_tb.uut_SINGLE_TRIGGER_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_TRIGGER_DELAY.final_trigger
+@200
+-CONTINUOUS_SIGNAL_DELAY
+@22
+ila_tb.uut_CONTINUOUS_SIGNAL_DELAY.value[31:0]
+ila_tb.uut_CONTINUOUS_SIGNAL_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_SIGNAL_DELAY.final_trigger
+@200
+-CONTINUOUS_NO_DELAY
+@22
+ila_tb.uut_CONTINUOUS_NO_DELAY.value[31:0]
+ila_tb.uut_CONTINUOUS_NO_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_NO_DELAY.final_trigger
+@200
+-CONTINUOUS_TRIGGER_DELAY
+@22
+ila_tb.uut_CONTINUOUS_TRIGGER_DELAY.value[31:0]
+ila_tb.uut_CONTINUOUS_TRIGGER_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_TRIGGER_DELAY.final_trigger
+@200
+-SINGLE_2_TRIGGERS_FIRST_DISABLED
+@22
+ila_tb.uut_SINGLE_2_TRIGGERS_AND_FIRST_TRIGGER_DISABLED.value[31:0]
+ila_tb.uut_SINGLE_2_TRIGGERS_AND_FIRST_TRIGGER_DISABLED.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_2_TRIGGERS_AND_FIRST_TRIGGER_DISABLED.final_trigger
+@200
+-SINGLE_2_TRIGGERS_AND
+@22
+ila_tb.uut_SINGLE_2_TRIGGERS_AND.value[31:0]
+ila_tb.uut_SINGLE_2_TRIGGERS_AND.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_2_TRIGGERS_AND.final_trigger
+@200
+-SINGLE_2_TRIGGERS_OR
+@22
+ila_tb.uut_SINGLE_2_TRIGGERS_OR.value[31:0]
+ila_tb.uut_SINGLE_2_TRIGGERS_OR.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_2_TRIGGERS_OR.final_trigger
+@200
+-CONTINUOUS_2_TRIGGERS_AND
+@22
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_AND.value[31:0]
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_AND.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_AND.final_trigger
+@200
+-CONTINUOUS_2_TRIGGERS_OR
+@22
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_OR.value[31:0]
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_OR.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_2_TRIGGERS_OR.final_trigger
+@200
+-SINGLE_NEGATE
+@22
+ila_tb.uut_SINGLE_NEGATE_NO_DELAY.value[31:0]
+ila_tb.uut_SINGLE_NEGATE_NO_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_SINGLE_NEGATE_NO_DELAY.final_trigger
+@200
+-CONTINUOUS_NEGATE
+@22
+ila_tb.uut_SINGLE_NEGATE_NO_DELAY.value[31:0]
+ila_tb.uut_CONTINUOUS_NEGATE_NO_DELAY.n_samples[7:0]
+@28
+ila_tb.uut_CONTINUOUS_NEGATE_NO_DELAY.final_trigger
+@200
+-SINGLE_64_BITS
+@22
+ila_tb.uut_64_BITS_SIGNAL_SINGLE_NO_DELAY.n_samples[7:0]
+ila_tb.uut_64_BITS_SIGNAL_SINGLE_NO_DELAY.value[31:0]
+ila_tb.uut_64_BITS_SIGNAL_SINGLE_NO_DELAY.data_out[63:0]
+@28
+ila_tb.uut_64_BITS_SIGNAL_SINGLE_NO_DELAY.value_select
+ila_tb.uut_64_BITS_SIGNAL_SINGLE_NO_DELAY.final_trigger
+@200
+-SINGLE_128_BITS
+@22
+ila_tb.uut_128_BITS_SIGNAL_SINGLE_NO_DELAY.n_samples[7:0]
+ila_tb.uut_128_BITS_SIGNAL_SINGLE_NO_DELAY.value[31:0]
+ila_tb.uut_128_BITS_SIGNAL_SINGLE_NO_DELAY.data_out[127:0]
+@28
+ila_tb.uut_128_BITS_SIGNAL_SINGLE_NO_DELAY.value_select[1:0]
+ila_tb.uut_128_BITS_SIGNAL_SINGLE_NO_DELAY.final_trigger
+@200
+-SINGLE_2_FIRST_SINGLE_SECOND_CONTINUOUS
+@22
+ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.n_samples[7:0]
+ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.value[31:0]
+@29
+ila_tb.uut_SINGLE_2_TRIGGERS_FIRST_SINGLE_SECOND_CONTINUOUS_AND.final_trigger
+@200
+-
+-
 [pattern_trace] 1
 [pattern_trace] 0

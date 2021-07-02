@@ -1,5 +1,6 @@
 //add core test module in testbench
 
+/*
    iob_ila ila_tb
      (
       .clk       (clk),
@@ -16,4 +17,5 @@
       .trigger(ila_trigger),
       .sampling_clk(ila_sampling_clk)
       );
+*/
 
