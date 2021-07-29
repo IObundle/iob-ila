@@ -5,7 +5,7 @@
 #define ILA_REDUCE_TYPE_AND 1
 
 // Init the ila module, all triggers are disabled initially
-void ila_init(int base,int numberTriggers);
+void ila_init(int base);
 
 // Reset the ILA buffer, and any active continuous trigger 
 void ila_reset();

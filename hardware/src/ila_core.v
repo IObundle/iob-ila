@@ -5,8 +5,6 @@
 
 `define CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W) (DATA_W >= SIGNAL_W ? 1 : $clog2(SIGNAL_W / DATA_W))
 
-// TODO: Change memory allocation from a single buffer to multiple buffers of 32 bits or smaller (the board as 32 bit or 16 bit blocks, so it would be multiple blocks of 32 and one block of 16, if needed)
-
 module ila_core 
   #(
     parameter DATA_W = `ILA_RDATA_W,
@@ -24,12 +22,9 @@ module ila_core
     `INPUT(trigger_type,TRIGGER_W),
     `INPUT(negate_trigger,TRIGGER_W),
     `INPUT(trigger_mask,TRIGGER_W),
-    `INPUT(delay_trigger,1),
-    `INPUT(delay_signal,1),
-    `INPUT(reduce_type,1),
 
-     // Mask for special triggers
-    `INPUT(special_trigger_mask, 1),
+     // Miscellaneous items
+    `INPUT(misc_enabled, 32),
 
       // Software side access to values sampled
     `INPUT(index,BUFFER_W),
@@ -43,10 +38,16 @@ module ila_core
     output reg [TRIGGER_W-1:0] active_triggers,
 
     // Enabled reset and system clk
-    `INPUT(rst_soft,1),
    `include "gen_if.v"
    );
    
+   wire rst_soft        = misc_enabled[0];
+   wire diff_signal     = misc_enabled[1];
+   wire circular_buffer = misc_enabled[2];
+   wire delay_trigger   = misc_enabled[3];
+   wire delay_signal    = misc_enabled[4];
+   wire reduce_type     = misc_enabled[5];
+
    //COMBINED SOFT/HARD RESET
    wire     rst_int = rst | rst_soft;
 
@@ -143,7 +144,7 @@ module ila_core
   // Special trigger - Different signal logic
   reg [SIGNAL_W-1:0] last_written_signal;
 
-  assign different_signal_enable_wr = ((last_written_signal != signal_data) | !special_trigger_mask[0]);
+  assign different_signal_enable_wr = ((last_written_signal != signal_data) | !diff_signal);
 
   always @(posedge clk,posedge rst_int)
   begin
@@ -184,17 +185,17 @@ module ila_core
 
   // CURRENT VALUE LOGIC
 
-   `define SIG_CLK(W,IN,OUT,CLK,RST) \
-     reg [W-1:0] OUT``_sync_0,OUT``_sync_1; \
-    always @(posedge CLK, posedge RST) \
-      if(RST) begin \
-        OUT``_sync_0 <= 0; \
-        OUT``_sync_1 <= 0; \
-      end else begin \
-        OUT``_sync_0 <= IN; \
-        OUT``_sync_1 <= OUT``_sync_0; \
-      end \
-      `COMB OUT = OUT``_sync_1;
+  `define SIG_CLK(W,IN,OUT,CLK,RST) \
+    reg [W-1:0] OUT``_sync_0,OUT``_sync_1; \
+  always @(posedge CLK, posedge RST) \
+    if(RST) begin \
+      OUT``_sync_0 <= 0; \
+      OUT``_sync_1 <= 0; \
+    end else begin \
+      OUT``_sync_0 <= IN; \
+      OUT``_sync_1 <= OUT``_sync_0; \
+    end \
+    `COMB OUT = OUT``_sync_1;
 
   reg [TRIGGER_W-1:0] trigger_value_reg;
   `REG_AR(sampling_clk,rst_int,0,trigger_value_reg,trigger)

@@ -83,7 +83,6 @@ wire [7:0] ila_triggers = {!eth.dma_ready,1'b0,m_axi_awvalid[1*1+:1],m_axi_arval
 
 */
 
-
    iob_ila #(
       .SIGNAL_W(32),
       .BUFFER_W(13),
