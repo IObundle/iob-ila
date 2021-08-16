@@ -72,6 +72,9 @@ void ila_reset(){
     setMisc(miscValue);
     miscValue = setBit(miscValue,RST_SOFT_BIT,0);
     setMisc(miscValue);
+    setTriggerType(triggerType);
+    setTriggerMask(triggerMask);
+    setTriggerNegate(triggerNegate);
 }
 
 // Set the trigger type

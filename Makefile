@@ -20,8 +20,13 @@ $(SIM_DIR)/ila.vcd:
 sim-clean:
 	make -C $(SIM_DIR) clean
 
-gen-wave:
-	python $(ILA_SW_DIR)/dataToVCD.py format.txt dataIn.txt dataOut.txt
+waves: dataOut.vcd
+
+vcd: dataOut.vcd
+	gtkwave dataOut.vcd
+
+dataOut.vcd: format.txt dataIn.txt
+	python $(ILA_SW_DIR)/dataToVCD.py format.txt dataIn.txt dataOut.vcd
 
 fpga:
 ifeq ($(FPGA_HOST), $(HOSTNAME))
