@@ -9,9 +9,29 @@ dataFile = open(sys.argv[2],"rb")
 
 dataIn = [x.strip() for x in dataFile.readlines()]
 
-formatData = [(x,int(y)) for (x,y) in [x.strip().split(" ") for x in formatFile.readlines()]]
-print(formatData)
-print(dataIn)
+def Tokenize(line):
+	WHITE = [' ','\t','\n']
+	state = (0 if line[0] in WHITE else 1)
+	tokenIndex = 0
+	index = 0
+	tokens = []
+	while index < len(line):
+		if state: # Inside a token
+			if line[index] in WHITE:
+				tokens.append(line[tokenIndex:index])
+				state = 0
+		else:
+			if not line[index] in WHITE:
+				tokenIndex = index
+				state = 1
+		index += 1
+
+	if(state):
+		tokens.append(line[tokenIndex:index])
+
+	return tokens
+
+formatData = [(x,int(y)) for (x,y) in [Tokenize(x) for x in formatFile.readlines()]]
 
 # Easier to work in strings
 def HexToBin(hexStr):
