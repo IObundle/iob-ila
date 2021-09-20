@@ -1,37 +1,16 @@
+from ilaBase import Tokenize,ParseSignal,IsWire
 import sys
 
 if(len(sys.argv) != 4):
 	print "Need three arguments, format file, data input file name and output file name"
 	sys.exit(0)
 
-formatFile = open(sys.argv[1],"r")
 dataFile = open(sys.argv[2],"rb")
 
 dataIn = [x.strip() for x in dataFile.readlines()]
 
-def Tokenize(line):
-	WHITE = [' ','\t','\n']
-	state = (0 if line[0] in WHITE else 1)
-	tokenIndex = 0
-	index = 0
-	tokens = []
-	while index < len(line):
-		if state: # Inside a token
-			if line[index] in WHITE:
-				tokens.append(line[tokenIndex:index])
-				state = 0
-		else:
-			if not line[index] in WHITE:
-				tokenIndex = index
-				state = 1
-		index += 1
-
-	if(state):
-		tokens.append(line[tokenIndex:index])
-
-	return tokens
-
-formatData = [(x,int(y)) for (x,y) in [Tokenize(x) for x in formatFile.readlines()]]
+formatFile = open(sys.argv[1],"r")
+formatData = ParseSignal(Tokenize(formatFile.read()))
 
 # Easier to work in strings
 def HexToBin(hexStr):
@@ -51,9 +30,8 @@ MAXIMUM_MAPPING_INDEX = 127
 mappingIndex = 33
 nameToVarMapping = {}
 for name,_ in formatData:
-	if name != "NULL":
-		nameToVarMapping.update({name:chr(mappingIndex)})
-		mappingIndex += 1
+	nameToVarMapping.update({name:chr(mappingIndex)})
+	mappingIndex += 1
 
 valueChanges = []
 for data in dataIn:
@@ -61,11 +39,10 @@ for data in dataIn:
 	values = []
 
 	for name,size in formatData:
-		if name != "NULL":
+		if IsWire(name):
 			binary = binRep[-size:]
 			values.append([nameToVarMapping[name],binary])
-
-		binRep = binRep[:-size]
+			binRep = binRep[:-size]
 
 	valueChanges.append(values)
 
@@ -74,7 +51,7 @@ outputFile = open(sys.argv[3],"w")
 outputFile.write("$scope module logic $end\n")
 
 for name,size in formatData:
-	if name != "NULL":
+	if IsWire(name):
 		outputFile.write("$var wire %d %s %s $end\n" % (size,nameToVarMapping[name],name,))
 
 outputFile.write("$upscope $end\n")
@@ -83,7 +60,7 @@ outputFile.write("$upscope $end\n")
 outputFile.write("$dumpvars\n")
 
 for name,size in formatData:
-	if name != "NULL":
+	if IsWire(name):
 		if size == 1:
 			outputFile.write("0%s\n" % nameToVarMapping[name])
 		else:

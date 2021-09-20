@@ -20,13 +20,17 @@ $(SIM_DIR)/ila.vcd:
 sim-clean:
 	make -C $(SIM_DIR) clean
 
-waves: dataOut.vcd
-
 vcd: dataOut.vcd
 	gtkwave dataOut.vcd
 
 dataOut.vcd: format.txt dataIn.txt
-	python $(ILA_SW_DIR)/dataToVCD.py format.txt dataIn.txt dataOut.vcd
+	python $(ILA_PYTHON_DIR)/ilaDataToVCD.py format.txt dataIn.txt dataOut.vcd
+
+genVerilog: format.txt
+	python $(ILA_PYTHON_DIR)/ilaGenerateVerilog.py format.txt ./
+
+genSource: format.txt
+	python $(ILA_PYTHON_DIR)/ilaGenerateSource.py format.txt ./source.c
 
 fpga:
 ifeq ($(FPGA_HOST), $(HOSTNAME))
