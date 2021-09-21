@@ -4,6 +4,14 @@
 #include "iob-uart.h"
 #include "printf.h"
 
+// The values of the defines can be found in the beginning of ila_core.v
+#define RST_SOFT_BIT        0
+#define DIFF_SIGNAL_BIT     1
+#define CIRCULAR_BUFFER_BIT 2
+#define DELAY_TRIGGER_BIT   3
+#define DELAY_SIGNAL_BIT    4
+#define REDUCE_TYPE_BIT     5
+
 //base address
 static int base;
 
@@ -11,10 +19,7 @@ static int base;
 static int triggerType;
 static int triggerNegate;
 static int triggerMask;
-
-static int specialTriggerMask;
-
-static int numberTriggers;
+static int miscValue;
 
 static void setTriggerType(int val){
     IO_SET(base,ILA_TRIGGER_TYPE,val);
@@ -28,64 +33,65 @@ static void setTriggerMask(int val){
     IO_SET(base,ILA_TRIGGER_MASK,val);
 }
 
-static void setSpecialTriggerMask(int val){
-    IO_SET(base,ILA_SPECIAL_TRIGGER_MASK,val);
+static void setMisc(int val){
+    IO_SET(base,ILA_MISCELLANEOUS,val);
+}
+
+static inline int setBit(int bitfield,int bit,int value){
+    value = (value ? 1 : 0);
+
+    bitfield &= ~(1 << bit);    // Clear
+    bitfield |= (value << bit); // Set to value
+
+    return bitfield;
 }
 
 // Init the ila module
-void ila_init(int base_address,int nTriggers){
+void ila_init(int base_address){
     base = base_address;
-    numberTriggers = nTriggers;
-
-    ila_reset();
 
     triggerType = 0;
     triggerNegate = 0;
     triggerMask = 0;
-    specialTriggerMask = 0;
+    miscValue = 0;
 
     setTriggerType(triggerType);
     setTriggerNegate(triggerNegate);
     setTriggerMask(triggerMask);
-    setSpecialTriggerMask(specialTriggerMask);
+    setMisc(miscValue);
 
     ila_set_time_offset(0);
     ila_set_reduce_type(ILA_REDUCE_TYPE_OR);
+
+    ila_reset();
 }
 
 // Reset the ILA buffer
 void ila_reset(){
-    IO_SET(base,ILA_SOFTRESET,1);
-    IO_SET(base,ILA_SOFTRESET,0); 
+    miscValue = setBit(miscValue,RST_SOFT_BIT,1);
+    setMisc(miscValue);
+    miscValue = setBit(miscValue,RST_SOFT_BIT,0);
+    setMisc(miscValue);
+    setTriggerType(triggerType);
+    setTriggerMask(triggerMask);
+    setTriggerNegate(triggerNegate);
 }
 
 // Set the trigger type
 void ila_set_trigger_type(int trigger,int type){
-    type = (type ? 0x1 : 0x0);
-    
-    triggerType &= ~(1 << trigger);   // Clear
-    triggerType |= (type << trigger); // Set type
-
+    triggerType = setBit(triggerType,trigger,type);
     setTriggerType(triggerType);
 }
 
 // Enable or disable a particular trigger
 void ila_set_trigger_enabled(int trigger,int enabled_bool){
-    int enabledInt = (enabled_bool ? 0x1 : 0x0);
-
-    triggerMask &= ~(1 << trigger);         // Clear
-    triggerMask |= (enabledInt << trigger); // Set enabled
-
+    triggerMask = setBit(triggerMask,trigger,enabled_bool);
     setTriggerMask(triggerMask);
 }
 
 // Set whether the trigger is to be negated
 void ila_set_trigger_negated(int trigger,int negate_bool){
-    int negateInt = (negate_bool ? 0x1 : 0x0);
-
-    triggerNegate &= ~(1 << trigger);        // Clear
-    triggerNegate |= (negateInt << trigger); // Set negate
-
+    triggerNegate = setBit(triggerNegate,trigger,negate_bool);
     setTriggerNegate(triggerNegate);
 }
 
@@ -101,24 +107,24 @@ void ila_disable_all_triggers(){
     setTriggerMask(triggerMask);
 }
 
-
 void ila_set_time_offset(int amount){
     if(amount == 0){
-        IO_SET(base, ILA_DELAY_TRIGGER, 0);
-        IO_SET(base, ILA_DELAY_SIGNAL,  0);
+        miscValue = setBit(miscValue,DELAY_TRIGGER_BIT,0);
+        miscValue = setBit(miscValue,DELAY_SIGNAL_BIT,0);
     } else if(amount >= 1){
-        IO_SET(base, ILA_DELAY_TRIGGER, 1);
-        IO_SET(base, ILA_DELAY_SIGNAL,  0);
+        miscValue = setBit(miscValue,DELAY_TRIGGER_BIT,1);
+        miscValue = setBit(miscValue,DELAY_SIGNAL_BIT,0);
     } else {
-        IO_SET(base, ILA_DELAY_TRIGGER, 0);
-        IO_SET(base, ILA_DELAY_SIGNAL,  1);
+        miscValue = setBit(miscValue,DELAY_TRIGGER_BIT,0);
+        miscValue = setBit(miscValue,DELAY_SIGNAL_BIT,1);
     }
+    setMisc(miscValue);
 }
 
 // Set the reduce type for multiple triggers 
 void ila_set_reduce_type(int reduceType){
-    reduceType &= 0x1;
-    IO_SET(base,ILA_REDUCE_TYPE,reduceType);
+    miscValue = setBit(miscValue,REDUCE_TYPE_BIT,reduceType);
+    setMisc(miscValue);
 }
 
 // Returns the number of samples currently stored in the ila buffer
@@ -163,18 +169,13 @@ int ila_get_current_active_triggers(){
 }
 
 void ila_set_different_signal_storing(int enabled_bool){
-    int enabledInt = (enabled_bool ? 0x1 : 0x0);
-
-    specialTriggerMask &= ~(1 << 0);         // Clear
-    specialTriggerMask |= (enabledInt << 0); // Set
-
-    setSpecialTriggerMask(specialTriggerMask);
+    miscValue = setBit(miscValue,DIFF_SIGNAL_BIT,enabled_bool);
+    setMisc(miscValue);
 }
 
 void ila_print_current_configuration(){
-    printf("Number Triggers:%d\n\n",numberTriggers);
     printf("Trigger Type:   %08x\n",triggerType);
     printf("Trigger Negate: %08x\n",triggerNegate);
     printf("Trigger Mask:   %08x\n",triggerMask);
-    printf("Special Trigger Mask: %08x\n\n",specialTriggerMask);
+    printf("Misc Value:     %08x\n\n",miscValue);
 }

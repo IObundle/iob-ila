@@ -8,7 +8,9 @@ USE_NETLIST ?=0
 
 #ILA PATHS
 ILA_HW_DIR:=$(ILA_DIR)/hardware
+ILA_INCLUDE_DIR:=$(ILA_HW_DIR)/include
 ILA_SW_DIR:=$(ILA_DIR)/software
+ILA_PYTHON_DIR:=$(ILA_SW_DIR)/python
 ILA_DOC_DIR:=$(ILA_DIR)/document
 ILA_SUBMODULES_DIR:=$(ILA_DIR)/submodules
 
@@ -22,7 +24,7 @@ HOSTNAME=$(shell hostname)
 #
 #SIMULATION
 #
-SIM_DIR ?=$(ILA_HW_DIR)/simulation
+ILA_SIM_DIR ?=$(ILA_HW_DIR)/simulation
 
 #
 #FPGA

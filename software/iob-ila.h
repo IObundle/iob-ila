@@ -5,7 +5,7 @@
 #define ILA_REDUCE_TYPE_AND 1
 
 // Init the ila module, all triggers are disabled initially
-void ila_init(int base,int numberTriggers);
+void ila_init(int base);
 
 // Reset the ILA buffer, and any active continuous trigger 
 void ila_reset();
@@ -61,3 +61,9 @@ void ila_set_different_signal_storing(int enabled_bool);
 
 // Prints current values for trigger types, negation, reduce type 
 void ila_print_current_configuration();
+
+// Get size needed for buffer argument for ila_output_data (need to generate source from format file, otherwise linker error)
+void ila_output_data_size(int number_samples);
+
+// Output ila data to later be transformed into a vcd file (need to generate source from format file, otherwise linker error)
+void ila_output_data(char* buffer,int number_samples);

@@ -49,12 +49,9 @@ module iob_ila
       .trigger_type(ILA_TRIGGER_TYPE),
       .negate_trigger(ILA_TRIGGER_NEGATE),
       .trigger_mask(ILA_TRIGGER_MASK),
-      .delay_trigger(ILA_DELAY_TRIGGER),
-      .delay_signal(ILA_DELAY_SIGNAL),
-      .reduce_type(ILA_REDUCE_TYPE),
 
-      // Mask for special triggers      
-      .special_trigger_mask(ILA_SPECIAL_TRIGGER_MASK),
+      // Mask for special triggers
+      .misc_enabled(ILA_MISCELLANEOUS),
 
       // Software side access to values sampled
       .index(ILA_INDEX),
@@ -67,7 +64,6 @@ module iob_ila
       .active_triggers(ILA_CURRENT_ACTIVE_TRIGGERS),
 
       // Enabled reset and system clk
-      .rst_soft(ILA_SOFTRESET),
       .clk(clk),
       .rst(rst)
      );
