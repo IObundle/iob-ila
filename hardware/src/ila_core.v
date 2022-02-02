@@ -3,7 +3,20 @@
 `include "iob_lib.vh"
 `include "iob_ila.vh"
 
-`define CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W) (DATA_W >= SIGNAL_W ? 1 : $clog2(SIGNAL_W / DATA_W))
+`define CEIL_DIV(A,B) (A % B == 0 ? (A / B) : ((A/B) + 1))
+`define CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W) (DATA_W >= SIGNAL_W ? 1 : $clog2(`CEIL_DIV(SIGNAL_W,DATA_W)))
+
+`define SIG_CLK(W,IN,OUT,CLK,RST) \
+  reg [W-1:0] OUT``_sync_0,OUT``_sync_1; \
+always @(posedge CLK, posedge RST) \
+  if(RST) begin \
+    OUT``_sync_0 <= 0; \
+    OUT``_sync_1 <= 0; \
+  end else begin \
+    OUT``_sync_0 <= IN; \
+    OUT``_sync_1 <= OUT``_sync_0; \
+  end \
+  `COMB OUT = OUT``_sync_1;
 
 module ila_core 
   #(
@@ -41,6 +54,30 @@ module ila_core
    `include "gen_if.v"
    );
    
+  function [31:0] fix_sim(input [31:0] in);
+    `ifdef SIM
+      integer i;
+      for(i = 0; i < 32; i = i + 1)
+        fix_sim[i] = (in[i] === 1'bx ? 1'b0 : in[i]);
+    `else
+        fix_sim = in;
+    `endif
+  endfunction
+   
+   reg [2**$clog2(SIGNAL_W)-1:0] registed_signal;
+   reg [TRIGGER_W-1:0] registed_trigger;
+
+   always @(posedge clk, posedge rst)
+   begin
+     if(rst)begin
+        registed_signal <= 0;
+        registed_trigger <= 0;
+     end else begin
+        registed_signal <= signal;
+        registed_trigger <= trigger;
+     end
+   end
+
    wire rst_soft        = misc_enabled[0];
    wire diff_signal     = misc_enabled[1];
    wire circular_buffer = misc_enabled[2];
@@ -89,14 +126,13 @@ module ila_core
   `REG_AR(sampling_clk,rst_int,0,trigger_enable_wr,final_trigger) // Add a "pipeline" register to the trigger
 
   // SIGNAL LOGIC
-  reg [SIGNAL_W-1:0] previous_signal,signal_data;
-  `REG_AR(sampling_clk,rst_int,0,previous_signal,signal)
+  reg [2**$clog2(SIGNAL_W)-1:0] previous_signal,signal_data;
+  `REG_AR(sampling_clk,rst_int,0,previous_signal,registed_signal)
 
-  wire [SIGNAL_W-1:0] final_signal = (delay_signal ? previous_signal : signal);
+  wire [2**$clog2(SIGNAL_W)-1:0] final_signal = (delay_signal ? previous_signal : registed_signal);
   `REG_AR(sampling_clk,rst_int,0,signal_data,final_signal) //  Add a "pipeline" register to the signal
 
-  // Both the trigger and signal have a "pipeline" register that serves to improve both the time constraints, as well as speed up
-  // compilation (the compiler has to spend less time moving logic around to accomodate the ILA)
+  // Both the trigger and signal have a "pipeline" register that serves to improve time constraints
 
   // INDEX LOGIC
   `SIGNAL(n_samples,BUFFER_W)
@@ -110,19 +146,19 @@ module ila_core
   `ACC_ARE(sampling_clk,rst_int,0,write_en && !full,n_samples,1)
 
   // Memory instance
-  wire [SIGNAL_W-1:0] data_out;
-   iob_2p_async_mem #(
+  wire [2**$clog2(SIGNAL_W)-1:0] data_out;
+   iob_t2p_ram #(
         .DATA_W(SIGNAL_W),
         .ADDR_W(BUFFER_W))
     buffer (
         .wclk(sampling_clk),
         .w_en(write_en),
-        .data_in(signal_data),
+        .w_data(signal_data[SIGNAL_W-1:0]),
         .w_addr(n_samples),
         .rclk(clk),
         .r_addr(index),
         .r_en(1'b1),
-        .data_out(data_out)
+        .r_data(data_out[SIGNAL_W-1:0])
     );
 
   // Pass n_samples from sampling_clk domain to sys domain
@@ -142,7 +178,7 @@ module ila_core
   `SIGNAL2OUT(samples,sys_samples)
 
   // Special trigger - Different signal logic
-  reg [SIGNAL_W-1:0] last_written_signal;
+  reg [2**$clog2(SIGNAL_W)-1:0] last_written_signal;
 
   assign different_signal_enable_wr = ((last_written_signal != signal_data) | !diff_signal);
 
@@ -170,11 +206,11 @@ module ila_core
       if(DATA_W >= SIGNAL_W)
         value_out <= data_out;
       else begin
-        for(ii = 0; ii < (SIGNAL_W / DATA_W); ii = ii + 1)
+        for(ii = 0; ii < `CEIL_DIV(SIGNAL_W,DATA_W); ii = ii + 1)
         begin
           if(value_select == ii)
           begin
-            value_out <= data_out[32*ii +: 32];
+            value_out <= fix_sim(32'h0 | data_out[32*ii +: 32]);
           end
         end
       end      
@@ -184,21 +220,8 @@ module ila_core
   `SIGNAL2OUT(value,value_out)
 
   // CURRENT VALUE LOGIC
-
-  `define SIG_CLK(W,IN,OUT,CLK,RST) \
-    reg [W-1:0] OUT``_sync_0,OUT``_sync_1; \
-  always @(posedge CLK, posedge RST) \
-    if(RST) begin \
-      OUT``_sync_0 <= 0; \
-      OUT``_sync_1 <= 0; \
-    end else begin \
-      OUT``_sync_0 <= IN; \
-      OUT``_sync_1 <= OUT``_sync_0; \
-    end \
-    `COMB OUT = OUT``_sync_1;
-
   reg [TRIGGER_W-1:0] trigger_value_reg;
-  `REG_AR(sampling_clk,rst_int,0,trigger_value_reg,trigger)
+  `REG_AR(sampling_clk,rst_int,0,trigger_value_reg,registed_trigger)
 
   `SIG_CLK(TRIGGER_W,trigger_value_reg,trigger_value,sampling_clk,rst)
 
@@ -209,18 +232,18 @@ module ila_core
 
   // Partition current signal into various pieces
   integer iii;
-  reg [DATA_W:0] current_signal;
+  reg [DATA_W-1:0] current_signal;
   always @*
   begin
     current_signal = 32'h0;
     if(DATA_W >= SIGNAL_W)
-      current_signal = signal;
+      current_signal = registed_signal;
     else begin
-      for(iii = 0; iii < (SIGNAL_W / DATA_W); iii = iii + 1)
+      for(iii = 0; iii < `CEIL_DIV(SIGNAL_W,DATA_W); iii = iii + 1)
       begin
         if(value_select == iii)
         begin
-          current_signal = signal[32*iii +: 32];
+          current_signal = fix_sim(32'h0 | registed_signal[32*iii +: 32]);
         end
       end
     end
@@ -232,3 +255,7 @@ module ila_core
   `SIG_CLK(TRIGGER_W,signal_value_reg,current_value,sampling_clk,rst)
 
 endmodule
+
+`undef CALCULATE_SIGNAL_SEL_W
+`undef CEIL_DIV
+`undef SIG_CLK

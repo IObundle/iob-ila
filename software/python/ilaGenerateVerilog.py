@@ -13,26 +13,36 @@ if not os.path.isdir(sys.argv[2]):
 formatFile = open(sys.argv[1],"r")
 formatData = ParseSignal(Tokenize(formatFile.read()))
 
-verilogFile = open(os.path.join(sys.argv[2],"signal_inst.v"),"w")
+verilogFile = open(os.path.join(sys.argv[2],"signal_inst.vh"),"w")
 
+sizeList = []
 signal_w = 0
 trigger_w = 0
 buffer_w = 12
 for name,size in formatData:
 	if IsWire(name):
 		signal_w += size
+		sizeList.append(size)
 	if IsTrigger(name):
 		trigger_w += 1
 	if IsBuffer(name):
 		buffer_w = size
 
+sizeList = list(set(sizeList))
 print(filter(lambda x : IsTrigger(x[0]),formatData))
+
+functionDef = ""
+
+for size in sizeList:
+	functionDef += "function [%d:0] ila_trunc_%d(input [%d:0] val);\n" % (size-1,size,size-1)
+	functionDef += "    ila_trunc_%d = (%d'h0 | val);\n" % (size,size)
+	functionDef += "endfunction\n"
 
 if signal_w == 0:
 	signal = "wire ila_signal;"
 else:
 	signal = "wire [%d:0] ila_signal = {" % (signal_w - 1)
-	signal += ",".join(reversed(filter(IsWire,[x for x,y in formatData]))) # Extracts names 
+	signal += ",".join(reversed(map(lambda x : "ila_trunc_%d" % int(x[1]) + "(" + x[0] + ")",filter(lambda x : IsWire(x[0]),formatData)))) # Extracts names 
 	signal += "};\n"
 
 if trigger_w == 0:
@@ -46,6 +56,8 @@ verilogFile.write("// Auto generated file\n")
 verilogFile.write("`define ILA_SIGNAL_W %d\n" % signal_w)
 verilogFile.write("`define ILA_TRIGGER_W %d\n" % trigger_w)
 verilogFile.write("`define ILA_BUFFER_W %d\n" % buffer_w)
+verilogFile.write("\n")
+verilogFile.write(functionDef)
 verilogFile.write("\n")
 verilogFile.write(signal)
 verilogFile.write(trigger)

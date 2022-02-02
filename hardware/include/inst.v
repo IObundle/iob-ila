@@ -4,7 +4,7 @@
    // ILA
    //
 
-`include "signal_inst.v"
+`include "signal_inst.vh"
 
 iob_ila #(
    .SIGNAL_W(`ILA_SIGNAL_W),
@@ -24,7 +24,7 @@ iob_ila #(
    .ready(slaves_resp[`ready(`ILA)]),
 
    .signal(ila_signal),
-   .trigger(ila_triggers),
+   .trigger(ila_trigger),
    .sampling_clk(clk)
    );
 
