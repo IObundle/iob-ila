@@ -8,6 +8,7 @@ if(len(sys.argv) != 4):
 dataFile = open(sys.argv[2],"rb")
 
 dataIn = [x.strip() for x in dataFile.readlines()]
+dataIn = [x for x in dataIn if x != ''] # Remove empty lines
 
 formatFile = open(sys.argv[1],"r")
 formatData = ParseSignal(Tokenize(formatFile.read()))
@@ -25,13 +26,25 @@ def HexToBin(hexStr):
 
 	return res
 
-MAXIMUM_MAPPING_INDEX = 127
+def GenerateId():
+	symbols = "!#$%&()*+,-.:;<=>?@GHIJKLMNOPQRSTUVWXYZghijklmnopqrstuvwxyz" # Only use this symbols, its simpler
 
-mappingIndex = 33
+	res = ""
+	if(GenerateId.index < len(symbols)):
+		res = symbols[GenerateId.index]
+	else:
+		first = GenerateId.index % len(symbols)
+		second = GenerateId.index // len(symbols)
+		res = symbols[second - 1] + symbols[first]
+
+	GenerateId.index += 1
+	return res
+GenerateId.index = 0
+
 nameToVarMapping = {}
 for name,_ in formatData:
-	nameToVarMapping.update({name:chr(mappingIndex)})
-	mappingIndex += 1
+	if IsWire(name):
+		nameToVarMapping.update({name:GenerateId()})
 
 valueChanges = []
 for data in dataIn:
@@ -46,15 +59,46 @@ for data in dataIn:
 
 	valueChanges.append(values)
 
-outputFile = open(sys.argv[3],"w")
+def InsideHieararchy(top,val):
+	if(len(top) > len(val)):
+		return False
 
-outputFile.write("$scope module logic $end\n")
+	for x,y in zip(top[:-1],val[:-1]):
+		if(x != y):
+			return False
+
+	return True
+
+orderedNames = []
 
 for name,size in formatData:
 	if IsWire(name):
-		outputFile.write("$var wire %d %s %s $end\n" % (size,nameToVarMapping[name],name,))
+		last = 0
+		for i,val in enumerate(orderedNames):
+			if InsideHieararchy(val[0].split("."),name.split(".")):
+				last = i + 1
 
-outputFile.write("$upscope $end\n")
+		orderedNames.insert(last,[name,size])
+
+outputFile = open(sys.argv[3],"w")
+
+currentHierarchyIndex = 0
+for name,size in orderedNames:
+	hierarchy = name.split(".")
+	
+	while len(hierarchy) > currentHierarchyIndex + 1:
+		outputFile.write("$scope module %s $end\n" % hierarchy[currentHierarchyIndex])
+		currentHierarchyIndex += 1
+
+	while len(hierarchy) < currentHierarchyIndex + 1:
+		outputFile.write("$upscope $end\n")
+		currentHierarchyIndex -= 1
+
+	outputFile.write("$var wire %d %s %s $end\n" % (size,nameToVarMapping[name],hierarchy[-1],))
+
+while currentHierarchyIndex >= 1:
+	outputFile.write("$upscope $end\n")
+	currentHierarchyIndex -= 1
 
 # Start everything at zero
 outputFile.write("$dumpvars\n")
@@ -79,6 +123,6 @@ for i in range(len(valueChanges)):
 		else:
 			outputFile.write("b%s %s\n" % (binary,var))
 
-outputFile.write("#%d\n" % (len(valueChanges)+1))
+outputFile.write("#%d\n" % ((len(valueChanges)+1) * 2))
 
 outputFile.close()

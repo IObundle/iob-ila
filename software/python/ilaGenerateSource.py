@@ -30,7 +30,6 @@ text  = "// Auto generated file\n"
 text += "#define ILA_SIGNAL_W %d\n" % signal_w
 text += "#define ILA_DWORD_SIZE %d\n" % BitSize(signal_w,32)
 text += "#define ILA_BYTE_SIZE %d\n" % BitSize(signal_w,8)
-text += "#define ILA_START_OFFSET %d\n" % (BitSize(signal_w,8) % 4)
 text += "#define ILA_TRIGGER_W %d\n" % trigger_w
 text += "#define ILA_BUFFER_SIZE %d\n\n" % (2 ** buffer_w)
 
