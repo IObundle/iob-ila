@@ -1,0 +1,14 @@
+// Small example when I used ILA to debug ETH
+// More wires can be used, this file only has 6 has an example
+// The size of each wire must be given, ILA truncates the signals to the size provided, meaning that it's not bad to give a size that is bigger or equal, but a smaller size and information is lost.
+
+$trigger eth.dma_out_run
+
+$buffer 13
+
+eth.dma_address_reg 32
+eth.m_axi_wdata 32
+eth.m_axi_rdata 32
+eth.rd_data_out 32 
+eth.tx_data 32
+eth.dma.state 8
