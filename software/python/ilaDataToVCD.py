@@ -1,11 +1,13 @@
+#!/usr/bin/env python3
+
 from ilaBase import Tokenize,ParseSignal,IsWire
 import sys
 
 if(len(sys.argv) != 4):
-	print "Need three arguments, format file, data input file name and output file name"
+	print("Need three arguments, format file, data input file name and output file name")
 	sys.exit(0)
 
-dataFile = open(sys.argv[2],"rb")
+dataFile = open(sys.argv[2],"r")
 
 dataIn = [x.strip() for x in dataFile.readlines()]
 dataIn = [x for x in dataIn if x != ''] # Remove empty lines
@@ -83,15 +85,25 @@ for name,size in formatData:
 outputFile = open(sys.argv[3],"w")
 
 currentHierarchyIndex = 0
+currentHierarchyName = ""
 for name,size in orderedNames:
 	hierarchy = name.split(".")
 	
+	#print(hierarchy,currentHierarchyName)
+
+	if(currentHierarchyName != "" and hierarchy[currentHierarchyIndex-1] != currentHierarchyName):
+		outputFile.write("$upscope $end\n")
+		outputFile.write("$scope module %s $end\n" % hierarchy[currentHierarchyIndex-1])
+		currentHierarchyName = hierarchy[currentHierarchyIndex-1]
+
 	while len(hierarchy) > currentHierarchyIndex + 1:
 		outputFile.write("$scope module %s $end\n" % hierarchy[currentHierarchyIndex])
+		currentHierarchyName = hierarchy[currentHierarchyIndex]
 		currentHierarchyIndex += 1
 
 	while len(hierarchy) < currentHierarchyIndex + 1:
 		outputFile.write("$upscope $end\n")
+		currentHierarchyName = hierarchy[currentHierarchyIndex]
 		currentHierarchyIndex -= 1
 
 	outputFile.write("$var wire %d %s %s $end\n" % (size,nameToVarMapping[name],hierarchy[-1],))

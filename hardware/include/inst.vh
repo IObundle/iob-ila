@@ -7,6 +7,7 @@
 `include "signal_inst.vh"
 
 iob_ila #(
+   .DATA_W(32),
    .SIGNAL_W(`ILA_SIGNAL_W),
    .BUFFER_W(`ILA_BUFFER_W),
    .TRIGGER_W(`ILA_TRIGGER_W)

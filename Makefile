@@ -1,15 +1,11 @@
 ILA_DIR:=.
 include config.mk
 
-.PHONY: corename \
-	sim sim-test sim-clean \
+.PHONY: sim sim-test sim-clean \
 	vcd genVerilog genSource \
 	fpga-build fpga-build-all fpga-test fpga-clean fpga-clean-all \
 	doc-build doc-build-all doc-test doc-clean doc-clean-all \
 	clean-all
-
-corename:
-	@echo "ILA"
 
 #
 # SIMULATE

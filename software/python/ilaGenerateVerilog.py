@@ -1,13 +1,15 @@
+#!/usr/bin/env python3
+
 from ilaBase import Tokenize,ParseSignal,IsWire,IsTrigger,IsBuffer
 import sys
 import os
 
 if(len(sys.argv) != 3):
-	print "Need two arguments, format file and output folder path"
+	print("Need two arguments, format file and output folder path")
 	sys.exit(0)
 
 if not os.path.isdir(sys.argv[2]):
-	print "Second argument must be filepath to a directory"
+	print("Second argument must be filepath to a directory")
 	sys.exit(0)
 
 formatFile = open(sys.argv[1],"r")
@@ -29,7 +31,6 @@ for name,size in formatData:
 		buffer_w = size
 
 sizeList = list(set(sizeList))
-print(filter(lambda x : IsTrigger(x[0]),formatData))
 
 functionDef = ""
 
@@ -42,7 +43,7 @@ if signal_w == 0:
 	signal = "wire ila_signal;"
 else:
 	signal = "wire [%d:0] ila_signal = {" % (signal_w - 1)
-	signal += ",".join(reversed(map(lambda x : "ila_trunc_%d" % int(x[1]) + "(" + x[0] + ")",filter(lambda x : IsWire(x[0]),formatData)))) # Extracts names 
+	signal += ",".join(reversed(list(map(lambda x : "ila_trunc_%d" % int(x[1]) + "(" + x[0] + ")",filter(lambda x : IsWire(x[0]),formatData))))) # Extracts names 
 	signal += "};\n"
 
 if trigger_w == 0:

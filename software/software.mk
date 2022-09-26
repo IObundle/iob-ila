@@ -6,7 +6,7 @@ MODULES+=ILA
 INCLUDE+=-I$(ILA_SW_DIR)
 
 #headers
-HDR+=$(ILA_SW_DIR)/ILAsw_reg.h
+HDR+=$(ILA_SW_DIR)/*.h iob_ila_swreg.h
 
-ILAsw_reg.h: $(ILA_HW_DIR)/include/ILAsw_reg.v
-	$(LIB_DIR)/software/mkregs.py $< SW
+iob_ila_swreg.h: $(ILA_DIR)/mkregs.conf
+	$(LIB_DIR)/software/python/mkregs.py iob_ila $(ILA_DIR) SW $(ILA_INC_DIR)/iob_ila.vh
