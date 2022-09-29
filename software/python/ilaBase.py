@@ -5,7 +5,9 @@ TRIGGER = "$trigger"
 BUFFER = "$buffer"
 
 def TokenChar(char):
-	res = (('a' <= char <= 'z') or ('A' <= char <= 'Z') or ('0' <= char <= '9') or char in ['_','.'])
+	#res = (('a' <= char <= 'z') or ('A' <= char <= 'Z') or ('0' <= char <= '9') or char in ['_','.','[',']'])
+	res = (not char in " \t\n$")
+
 	return res
 
 def Tokenize(text):

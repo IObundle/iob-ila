@@ -3,16 +3,16 @@
 `include "iob_lib.vh"
 
 module ila_trigger_logic (
-    `INPUT(trigger_in,1),
-    `INPUT(mask,1),
-    `INPUT(negate,1),
-    `INPUT(trigger_type,1),
-    `INPUT(reduce_type,1),
+    `IOB_INPUT(trigger_in,1),
+    `IOB_INPUT(mask,1),
+    `IOB_INPUT(negate,1),
+    `IOB_INPUT(trigger_type,1),
+    `IOB_INPUT(reduce_type,1),
 
-    `OUTPUT(trigger_out,1),
+    `IOB_OUTPUT(trigger_out,1),
 
-    `INPUT(clk,1),
-    `INPUT(rst,1)
+    `IOB_INPUT(clk,1),
+    `IOB_INPUT(rst,1)
     );
 
 wire trigger_neg = (trigger_in ^ negate);
@@ -30,8 +30,8 @@ always @(posedge clk,posedge rst)
       trigger_activated <=  trigger_activated | trigger;
   end
 
-`SIGNAL(trigger_val,1)
-`SIGNAL2OUT(trigger_out,trigger_val)
+`IOB_VAR(trigger_val,1)
+`IOB_WIRE2WIRE(trigger_val,trigger_out)
 
 always @*
    begin

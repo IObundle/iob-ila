@@ -22,7 +22,7 @@ static inline char* OutputHex(char* buffer,int value){
 }
 
 int ila_output_data_size(int number_samples){
-    int size_per_line = number_samples * ILA_BYTE_SIZE + 1; // For new line
+    int size_per_line = ILA_DWORD_SIZE * 8 + 2; // For new line
     int size = size_per_line * number_samples;
 
     return size;
@@ -34,6 +34,7 @@ void ila_output_data(char* buffer,int number_samples){
     buffer[0] = '\0'; // For the cases where number_samples == 0
 
     for(int i = 0; i < number_samples; i++){
+        printf("%d\n",i);
         for(int ii = ILA_DWORD_SIZE - 1; ii >= 0; ii--){
             data.i32 = ila_get_large_value(i,ii);
             buffer = OutputHex(buffer,data.i8[3]);

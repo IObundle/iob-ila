@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
+
 from ilaBase import Tokenize,ParseSignal,IsWire,IsTrigger,IsBuffer
 import sys
 
 if(len(sys.argv) != 3):
-	print "Need two arguments, format file and output file path"
+	print("Need two arguments, format file and output file path")
 	sys.exit(0)
 
 formatFile = open(sys.argv[1],"r")
