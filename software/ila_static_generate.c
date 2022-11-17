@@ -34,7 +34,6 @@ void ila_output_data(char* buffer,int number_samples){
     buffer[0] = '\0'; // For the cases where number_samples == 0
 
     for(int i = 0; i < number_samples; i++){
-        printf("%d\n",i);
         for(int ii = ILA_DWORD_SIZE - 1; ii >= 0; ii--){
             data.i32 = ila_get_large_value(i,ii);
             buffer = OutputHex(buffer,data.i8[3]);
