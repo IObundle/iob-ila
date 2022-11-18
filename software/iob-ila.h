@@ -66,4 +66,7 @@ void ila_print_current_configuration();
 int ila_output_data_size(int number_samples);
 
 // Output ila data to later be transformed into a vcd file (need to generate source from format file, otherwise linker error)
-void ila_output_data(char* buffer,int number_samples);
+int ila_output_data(char* buffer,int start,int end); // Returns number of samples outputted, doesn't check buffer size (need to make sure that buffer can store everyting [see ila_output_data_size])
+
+// Output everything to output (need to generate source from format file, otherwise linker error)
+void ila_output_everything();
