@@ -18,7 +18,7 @@ sim-test:
 	make -C $(SIM_DIR) test
 
 sim-clean:
-	make -C $(SIM_DIR) clean-all
+	make -C $(SIM_DIR) clean
 
 #
 # VCD GENERATION
@@ -74,8 +74,11 @@ doc-clean:
 doc-clean-all:
 	$(foreach s, $(DOC_LIST), make doc-clean DOC=$s;)
 
+sw-clean:
+	rm -rf $(ILA_PYTHON_DIR)/__pycache__
+
 #
 # CLEAN ALL
 # 
 
-clean-all: sim-clean fpga-clean-all doc-clean-all
+clean-all: sw-clean sim-clean
