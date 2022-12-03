@@ -6,6 +6,8 @@
 
 `include "signal_inst.vh"
 
+`ifdef USE_ILA
+
 iob_ila #(
    .DATA_W(32),
    .SIGNAL_W(`ILA_SIGNAL_W),
@@ -28,5 +30,8 @@ iob_ila #(
    .trigger(ila_trigger),
    .sampling_clk(clk)
    );
+`else
 
+assign slaves_resp[`ready(`ILA)] = 1'b1; // Always ready everything
 
+`endif
