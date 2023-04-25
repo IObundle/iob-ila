@@ -81,4 +81,4 @@ sw-clean:
 # CLEAN ALL
 # 
 
-clean-all: sw-clean sim-clean
+clean-all: sw-clean
