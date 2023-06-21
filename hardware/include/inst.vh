@@ -10,9 +10,9 @@
 
 iob_ila #(
    .DATA_W(32),
-   .SIGNAL_W(`ILA_SIGNAL_W),
-   .BUFFER_W(`ILA_BUFFER_W),
-   .TRIGGER_W(`ILA_TRIGGER_W)
+   .SIGNAL_W(`IOB_ILA_SIGNAL_W),
+   .BUFFER_W(`IOB_ILA_BUFFER_W),
+   .TRIGGER_W(`IOB_ILA_TRIGGER_W)
    )
   ila
   (
@@ -20,7 +20,7 @@ iob_ila #(
    .clk       (clk),
    .rst       (reset),
    .valid(slaves_req[`valid(`ILA)]),
-   .address(slaves_req[`address(`ILA,`ILA_ADDR_W+2)-2]),
+   .address(slaves_req[`address(`ILA,`IOB_ILA_ADDR_W+2)-2]),
    .wdata(slaves_req[`wdata(`ILA)]),
    .wstrb(slaves_req[`wstrb(`ILA)]),
    .rdata(slaves_resp[`rdata(`ILA)]),

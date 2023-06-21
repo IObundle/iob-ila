@@ -1,23 +1,24 @@
 `timescale 1ns/1ps
 
 `include "iob_lib.vh"
+`include "iob_ila_conf.vh"
 
 module ila_trigger_logic (
-    `IOB_INPUT(trigger_in,1),
-    `IOB_INPUT(mask,1),
-    `IOB_INPUT(negate,1),
-    `IOB_INPUT(trigger_type,1),
-    `IOB_INPUT(reduce_type,1),
+    input [1-1:0] trigger_in,
+    input [1-1:0] mask,
+    input [1-1:0] negate,
+    input [1-1:0] trigger_type,
+    input [1-1:0] reduce_type,
 
-    `IOB_OUTPUT(trigger_out,1),
+    output [1-1:0] trigger_out,
 
-    `IOB_INPUT(clk,1),
-    `IOB_INPUT(rst,1)
+    input [1-1:0] clk,
+    input [1-1:0] rst
     );
 
 wire trigger_neg = (trigger_in ^ negate);
 
-wire trigger = (reduce_type == `ILA_REDUCE_AND ? (trigger_neg | !mask): // When reduce is AND, mask = 0 sets signal to 1 (AND identity)
+wire trigger = (reduce_type == `IOB_ILA_REDUCE_AND ? (trigger_neg | !mask): // When reduce is AND, mask = 0 sets signal to 1 (AND identity)
                                                  (trigger_neg & mask)); // When reduce is  OR, mask = 0 sets signal to 0 (OR  identity)
 
 reg trigger_activated;
@@ -26,18 +27,19 @@ always @(posedge clk,posedge rst)
   begin
     if(rst) 
       trigger_activated <= 0;
-  else if (trigger_type == `ILA_CONTINUOUS_TYPE)
+  else if (trigger_type == `IOB_ILA_CONTINUOUS_TYPE)
       trigger_activated <=  trigger_activated | trigger;
   end
 
-`IOB_VAR(trigger_val,1)
-`IOB_WIRE2WIRE(trigger_val,trigger_out)
+reg [1-1:0] trigger_val;
+assign trigger_out = trigger_val;
 
 always @*
    begin
     case(trigger_type)
-      `ILA_SINGLE_TYPE:     trigger_val = trigger;
-      `ILA_CONTINUOUS_TYPE: trigger_val = trigger_activated | trigger;
+      `IOB_ILA_SINGLE_TYPE:     trigger_val = trigger;
+      `IOB_ILA_CONTINUOUS_TYPE: trigger_val = trigger_activated | trigger;
+       default: ; // Do nothing
     endcase
    end
 
