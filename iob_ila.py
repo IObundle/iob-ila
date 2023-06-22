@@ -108,7 +108,7 @@ class iob_ila(iob_module):
                     "type": "P",
                     "val": "0",
                     "min": "NA",
-                    "max": "NA",
+                    "max": "9999",
                     "descr": "Width of the sampler signal input",
                 },
                 {
