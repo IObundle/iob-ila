@@ -12,7 +12,8 @@ from iob_utils import iob_utils
 from iob_clkenrst_portmap import iob_clkenrst_portmap
 from iob_clkenrst_port import iob_clkenrst_port
 from iob_reg import iob_reg
-from iob_reg_e import iob_reg_e
+from iob_reg_r import iob_reg_r
+from iob_reg_re import iob_reg_re
 
 
 class iob_ila(iob_module):
@@ -31,7 +32,8 @@ class iob_ila(iob_module):
         iob_clkenrst_portmap.setup()
         iob_clkenrst_port.setup()
         iob_reg.setup()
-        iob_reg_e.setup()
+        iob_reg_r.setup()
+        iob_reg_re.setup()
 
         cls._setup_confs()
         cls._setup_ios()
@@ -53,36 +55,12 @@ class iob_ila(iob_module):
             [
                 # Macros
                 {
-                    "name": "MAX_TRIGGERS",
-                    "type": "M",
-                    "val": "32",
-                    "min": "NA",
-                    "max": "NA",
-                    "descr": "",
-                },
-                {
-                    "name": "MAX_SAMPLES_W",
-                    "type": "M",
-                    "val": "16",
-                    "min": "NA",
-                    "max": "NA",
-                    "descr": "",
-                },
-                {
-                    "name": "MAX_SIGNAL_SELECT_W",
-                    "type": "M",
-                    "val": "4",
-                    "min": "NA",
-                    "max": "NA",
-                    "descr": "",
-                },
-                {
                     "name": "SINGLE_TYPE",
                     "type": "M",
                     "val": "0",
                     "min": "NA",
                     "max": "NA",
-                    "descr": "",
+                    "descr": "Define value used to select trigger of type SINGLE.",
                 },
                 {
                     "name": "CONTINUOUS_TYPE",
@@ -90,7 +68,7 @@ class iob_ila(iob_module):
                     "val": "1",
                     "min": "NA",
                     "max": "NA",
-                    "descr": "",
+                    "descr": "Define value used to select trigger of type CONTINUOUS.",
                 },
                 {
                     "name": "REDUCE_OR",
@@ -98,24 +76,8 @@ class iob_ila(iob_module):
                     "val": "0",
                     "min": "NA",
                     "max": "NA",
-                    "descr": "",
+                    "descr": "Define value used to select the 'OR' logic between the triggers. It the value is different, it uses 'AND' logic.",
                 },
-                {
-                    "name": "REDUCE_AND",
-                    "type": "M",
-                    "val": "1",
-                    "min": "NA",
-                    "max": "NA",
-                    "descr": "",
-                },
-                # {
-                #    "name": "RDATA_W",
-                #    "type": "M",
-                #    "val": "32",
-                #    "min": "NA",
-                #    "max": "NA",
-                #    "descr": "",
-                # },
                 # Parameters
                 {
                     "name": "ADDR_W",
@@ -133,21 +95,21 @@ class iob_ila(iob_module):
                     "max": "NA",
                     "descr": "Data bus width",
                 },
-                {
-                    "name": "WDATA_W",
-                    "type": "P",
-                    "val": "32",
-                    "min": "NA",
-                    "max": "NA",
-                    "descr": "",
-                },
+                # {
+                #    "name": "WDATA_W",
+                #    "type": "P",
+                #    "val": "32",
+                #    "min": "NA",
+                #    "max": "NA",
+                #    "descr": "",
+                # },
                 {
                     "name": "SIGNAL_W",
                     "type": "P",
                     "val": "0",
                     "min": "NA",
                     "max": "NA",
-                    "descr": "",
+                    "descr": "Width of the sampler signal input",
                 },
                 {
                     "name": "BUFFER_W",
@@ -155,15 +117,15 @@ class iob_ila(iob_module):
                     "val": "0",
                     "min": "NA",
                     "max": "NA",
-                    "descr": "",
+                    "descr": "Size of the buffer to store samples.",
                 },
                 {
                     "name": "TRIGGER_W",
                     "type": "P",
                     "val": "0",
                     "min": "NA",
-                    "max": "NA",
-                    "descr": "",
+                    "max": "32",
+                    "descr": "Width of the trigger input",
                 },
             ]
         )
@@ -289,7 +251,7 @@ class iob_ila(iob_module):
                         "addr": -1,
                         "log2n_items": 0,
                         "autologic": True,
-                        "descr": "Since it is a debug core and performance is not a priority, samples are accessed by first setting the index to read and then reading the value of ILA_DATA",
+                        "descr": "Since it is a debug core and performance is not a priority, samples are accessed by first setting the index to read and then reading the value of SAMPLE_DATA",
                     },
                     {
                         "name": "SIGNAL_SELECT",

@@ -18,14 +18,14 @@ module ila_trigger_logic (
 
 wire trigger_neg = (trigger_in ^ negate);
 
-wire trigger = (reduce_type == `IOB_ILA_REDUCE_AND ? (trigger_neg | !mask): // When reduce is AND, mask = 0 sets signal to 1 (AND identity)
-                                                 (trigger_neg & mask)); // When reduce is  OR, mask = 0 sets signal to 0 (OR  identity)
+wire trigger = (reduce_type == `IOB_ILA_REDUCE_OR ? (trigger_neg & mask): // When reduce is  OR, mask = 0 sets signal to 0 (OR  identity)
+                                                 (trigger_neg | !mask)); // When reduce is AND, mask = 0 sets signal to 1 (AND identity)
 
 reg trigger_activated;
 
 always @(posedge clk,posedge rst)
   begin
-    if(rst) 
+  if(rst) 
       trigger_activated <= 0;
   else if (trigger_type == `IOB_ILA_CONTINUOUS_TYPE)
       trigger_activated <=  trigger_activated | trigger;

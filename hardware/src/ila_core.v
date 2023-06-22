@@ -4,26 +4,6 @@
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
 
-module sig_clk #(
-   parameter W = 0
-) (
-   input [W-1:0] clk_i,
-   input [W-1:0] arst_i,
-   input [W-1:0] data_i,
-   output reg [W-1:0] data_o
-);
-   reg [W-1:0] data_sync_0, data_sync_1;
-   always @(posedge clk_i, posedge arst_i)
-     if(arst_i) begin
-       data_sync_0 <= 0;
-       data_sync_1 <= 0;
-     end else begin
-       data_sync_0 <= data_i;
-       data_sync_1 <= data_sync_0;
-     end
-     always @* data_o = data_sync_1;
-endmodule
-
 module ila_core #(
    parameter DATA_W    = 0,
    parameter SIGNAL_W  = 0,
@@ -56,10 +36,11 @@ module ila_core #(
 
    // Enabled reset and system clk
    input clk_i,
+   input cke_i,
    input arst_i
 );
 
-   function static [31:0] fix_sim(input vector [31:0] in);
+   function static [31:0] fix_sim(input [31:0] in);
 `ifdef SIM
       integer i;
       for (i = 0; i < 32; i = i + 1) fix_sim[i] = (in[i] === 1'bx ? 1'b0 : in[i]);
@@ -287,7 +268,7 @@ SIGNAL_W
       .data_o(trigger_value_reg)
    );
 
-   sig_clk #(
+   ila_sig_clk #(
       TRIGGER_W
    ) trigger_sig_clk (
       .clk_i (sampling_clk),
@@ -309,7 +290,7 @@ SIGNAL_W
       .data_o(active_trigger_reg)
    );
 
-   sig_clk #(
+   ila_sig_clk #(
       TRIGGER_W
    ) trigger_sig_clk (
       .clk_i (sampling_clk),
@@ -351,7 +332,7 @@ SIGNAL_W
       .data_o(signal_value_reg)
    );
 
-   sig_clk #(
+   ila_sig_clk #(
       TRIGGER_W
    ) trigger_sig_clk (
       .clk_i (sampling_clk),

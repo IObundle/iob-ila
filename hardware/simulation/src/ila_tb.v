@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "iob_ila.vh"
+`include "iob_ila_conf.vh"
 
 module ila_tb;
 
@@ -165,50 +165,50 @@ module ila_tb;
    //system clock
    always #(clk_per / 2) clk = ~clk;
 
-   // Verible does not like multi-line macros.   
-   // TODO: Find alternative for macro below
-   //`define UUT_INSTANCE(TYPE,NEGATE,DELAY_TRIGGER,DELAY_SIGNAL,NAME)  \
-//   ila_core #(  \
-//     .DATA_W(32), \  // Interface expects 32 bits
-//     .BUFFER_W(8), \
-//     .SIGNAL_W(8), \ // Signal only takes 8 bits
-//     .TRIGGER_W(1) \ // Only one trigger
-//     ) \ 
-//     uut_``NAME \
-//     ( \
-//       \// Trigger and signals to sample
-//      .signal(ila_signal), \
-//      .trigger(ila_trigger), \
-//      .sampling_clk(clk), \
-//       \// Trigger and signal configuration
-//      .trigger_type(TYPE), \
-//      .negate_trigger(NEGATE), \
-//      .trigger_mask(1'b1), \
-//      .delay_trigger(DELAY_TRIGGER), \
-//      .delay_signal(DELAY_SIGNAL), \
-//      .reduce_type(`IOB_ILA_REDUCE_OR), \
-//      \// Mask for special triggers
-//      .special_trigger_mask(ila_special_trigger_mask), \
-//       \// Software side access to values sampled
-//      .index(ila_index), \
-//      .samples(), \
-//      .value(), \
-//      .value_select(1'b0), \ 
-//       \// Enabled reset and system clk
-//      .rst_soft(rst_soft), \
-//      .clk(clk), \
-//      .rst(rst) \
-//     );
-//
-//`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b0,1'b0,SINGLE_NO_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b1,1'b0,1'b0,SINGLE_NEGATE_NO_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b1,1'b0,SINGLE_TRIGGER_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b0,1'b1,SINGLE_SIGNAL_DELAY)
-//
-//`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b0,1'b0,CONTINUOUS_NO_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b1,1'b0,1'b0,CONTINUOUS_NEGATE_NO_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b1,1'b0,CONTINUOUS_TRIGGER_DELAY)
-//`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b0,1'b1,CONTINUOUS_SIGNAL_DELAY)
+`define UUT_INSTANCE(TYPE,NEGATE,DELAY_TRIGGER,DELAY_SIGNAL,NAME)  \
+   ila_core #(  \
+     .DATA_W(32), /*Interface expects 32 bits*/ \
+     .BUFFER_W(8), \
+     .SIGNAL_W(8), /* Signal only takes 8 bits*/ \
+     .TRIGGER_W(1) /* Only one trigger*/ \
+     ) \
+     uut_``NAME \
+     ( \
+       /* Trigger and signals to sample*/\
+      .signal(ila_signal), \
+      .trigger(ila_trigger), \
+      .sampling_clk(clk), \
+       /* Trigger and signal configuration*/\
+      .trigger_type(TYPE), \
+      .negate_trigger(NEGATE), \
+      .trigger_mask(1'b1), \
+      .delay_trigger(DELAY_TRIGGER), \
+      .delay_signal(DELAY_SIGNAL), \
+      .reduce_type(`IOB_ILA_REDUCE_OR), \
+      /* Mask for special triggers*/\
+      .special_trigger_mask(ila_special_trigger_mask), \
+       /* Software side access to values sampled*/\
+      .index(ila_index), \
+      .samples(), \
+      .value(), \
+      .value_select(1'b0),\
+       /* Enabled reset and system clk*/\
+      .rst_soft(rst_soft), \
+      .clk_i(clk), \
+      .rst_i(rst) \
+     );
+
+`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b0,1'b0,SINGLE_NO_DELAY)
+`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b1,1'b0,1'b0,SINGLE_NEGATE_NO_DELAY)
+`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b1,1'b0,SINGLE_TRIGGER_DELAY)
+`UUT_INSTANCE(`IOB_ILA_SINGLE_TYPE,1'b0,1'b0,1'b1,SINGLE_SIGNAL_DELAY)
+
+`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b0,1'b0,CONTINUOUS_NO_DELAY)
+`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b1,1'b0,1'b0,CONTINUOUS_NEGATE_NO_DELAY)
+`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b1,1'b0,CONTINUOUS_TRIGGER_DELAY)
+`UUT_INSTANCE(`IOB_ILA_CONTINUOUS_TYPE,1'b0,1'b0,1'b1,CONTINUOUS_SIGNAL_DELAY)
+
+   wire and_reduce_type = ~1'b`IOB_ILA_REDUCE_OR;
 
    ila_core #(
       .DATA_W   (32),  // Interface expects 32 bits
@@ -226,7 +226,7 @@ module ila_tb;
       .trigger_mask        (2'b11),
       .delay_trigger       (1'b0),
       .delay_signal        (1'b0),
-      .reduce_type         (`IOB_ILA_REDUCE_AND),
+      .reduce_type         (and_reduce_type),
       // Mask for special triggers
       .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
@@ -236,8 +236,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -266,8 +266,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -286,7 +286,7 @@ module ila_tb;
       .trigger_mask        (2'b11),
       .delay_trigger       (1'b0),
       .delay_signal        (1'b0),
-      .reduce_type         (`IOB_ILA_REDUCE_AND),
+      .reduce_type         (and_reduce_type),
       // Mask for special triggers
       .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
@@ -296,8 +296,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -316,7 +316,7 @@ module ila_tb;
       .trigger_mask        (2'b11),
       .delay_trigger       (1'b0),
       .delay_signal        (1'b0),
-      .reduce_type         (`IOB_ILA_REDUCE_AND),
+      .reduce_type         (and_reduce_type),
       // Mask for special triggers
       .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
@@ -326,8 +326,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -356,8 +356,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -376,7 +376,7 @@ module ila_tb;
       .trigger_mask        (2'b10),
       .delay_trigger       (1'b0),
       .delay_signal        (1'b0),
-      .reduce_type         (`IOB_ILA_REDUCE_AND),
+      .reduce_type         (and_reduce_type),
       // Mask for special triggers
       .special_trigger_mask(ila_special_trigger_mask),
       // Software side access to values sampled
@@ -386,8 +386,8 @@ module ila_tb;
       .value_select        (1'b0),
       // Enabled reset and system clk
       .rst_soft            (rst_soft),
-      .clk                 (clk),
-      .rst                 (rst)
+      .clk_i                 (clk),
+      .rst_i                 (rst)
    );
 
    ila_core #(
@@ -416,8 +416,8 @@ module ila_tb;
       .value_select(ila_value_select),  // Selects value to output
       // Enabled reset and system clk
       .rst_soft(rst_soft),
-      .clk(clk),
-      .rst(rst)
+      .clk_i(clk),
+      .rst_i(rst)
    );
 
    ila_core #(
@@ -451,8 +451,8 @@ module ila_tb;
       .value_select(ila_value_select2),  // Selects value to output
       // Enabled reset and system clk
       .rst_soft(rst_soft),
-      .clk(clk),
-      .rst(rst)
+      .clk_i(clk),
+      .rst_i(rst)
    );
 endmodule
 
