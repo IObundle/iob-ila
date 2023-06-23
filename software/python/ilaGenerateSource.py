@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from ilaBase import Tokenize,ParseSignal,IsWire,IsTrigger,IsBuffer
+from ilaBase import Tokenize,ParseSignal,IsWire,IsTrigger
 import sys
 
 
@@ -8,25 +8,22 @@ def BitSize(val,nBits):
 	res = ((val - 1) // nBits) + 1
 	return res
 
-def main(formatData, sourceFilename):
+def generate_driver_source(ila_instance_name, formatData, sourceFilename):
 	sourceFile = open(sourceFilename,"w")
 	signal_w = 0
-	trigger_w = 0
-	buffer_w = 8
+	#trigger_w = 0
 	for name,size in formatData:
 		if IsWire(name):
 			signal_w += size
-		if IsTrigger(name):
-			trigger_w += 1
-		if IsBuffer(name):
-			buffer_w = size
+		#if IsTrigger(name):
+		#	trigger_w += 1
 
 	text  = "// Auto generated file\n"
-	text += "#define ILA_SIGNAL_W %d\n" % signal_w
-	text += "#define ILA_DWORD_SIZE %d\n" % BitSize(signal_w,32)
-	text += "#define ILA_BYTE_SIZE %d\n" % BitSize(signal_w,8)
-	text += "#define ILA_TRIGGER_W %d\n" % trigger_w
-	text += "#define ILA_BUFFER_SIZE %d\n\n" % (2 ** buffer_w)
+	#text += f"#define {ila_instance_name.upper()}_SIGNAL_W {signal_w}\n"
+	text += f"#define {ila_instance_name.upper()}_DWORD_SIZE {BitSize(signal_w,32)}\n"
+	text += f"#define {ila_instance_name.upper()}_BYTE_SIZE {BitSize(signal_w,8)}\n"
+	#text += f"#define {ila_instance_name.upper()}_TRIGGER_W {trigger_w}\n"
+	text += f"#define {ila_instance_name.upper()}_BUFFER_SIZE (2 ** {ila_instance_name.upper()}_BUFFER_W)\n\n"
 
 	text += '#include "ila_static_generate.c"\n'
 
@@ -40,4 +37,4 @@ if __name__ == "__main__":
 	formatFile = open(sys.argv[1],"r")
 	formatData = ParseSignal(Tokenize(formatFile.read()))
 
-	main(formatData,sys.argv[2])
+	generate_driver_source("ila",formatData,sys.argv[2])

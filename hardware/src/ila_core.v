@@ -27,7 +27,7 @@ module ila_core #(
    input  [                                BUFFER_W-1:0] index,
    output [                                BUFFER_W-1:0] samples,
    output [                                  DATA_W-1:0] value,
-   input  [(DATA_W >= SIGNAL_W ? 1 : $clog2(`CEIL_DIV(SIGNAL_W,DATA_W)))-1:0] value_select,
+   input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select,
 
    // Software side access to current values
    output [   DATA_W-1:0] current_value,
@@ -189,14 +189,14 @@ SIGNAL_W
       .DATA_W(SIGNAL_W),
       .ADDR_W(BUFFER_W)
    ) buffer (
-      .w_clk (sampling_clk),
-      .w_en  (write_en_2),
-      .w_data(signal_data_2[SIGNAL_W-1:0]),
-      .w_addr(n_samples),
-      .r_clk (clk_i),
-      .r_addr(index),
-      .r_en  (1'b1),
-      .r_data(data_out[SIGNAL_W-1:0])
+      .w_clk_i (sampling_clk),
+      .w_en_i  (write_en_2),
+      .w_data_i(signal_data_2[SIGNAL_W-1:0]),
+      .w_addr_i(n_samples),
+      .r_clk_i (clk_i),
+      .r_addr_i(index),
+      .r_en_i  (1'b1),
+      .r_data_o(data_out[SIGNAL_W-1:0])
    );
 
    // Pass n_samples from sampling_clk domain to sys domain
@@ -292,7 +292,7 @@ SIGNAL_W
 
    ila_sig_clk #(
       TRIGGER_W
-   ) trigger_sig_clk (
+   ) active_trigger_sig_clk (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
       .data_i(active_trigger_reg),
@@ -334,7 +334,7 @@ SIGNAL_W
 
    ila_sig_clk #(
       TRIGGER_W
-   ) trigger_sig_clk (
+   ) value_sig_clk (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
       .data_i(signal_value_reg),

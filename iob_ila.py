@@ -5,15 +5,19 @@ import sys
 
 from iob_module import iob_module
 from setup import setup
+import iob_colors
+from ilaGenerateVerilog import generate_verilog_source
+from ilaGenerateSource import generate_driver_source
+from ilaBase import get_format_data
 
 # Submodules
 from iob_lib import iob_lib
 from iob_utils import iob_utils
 from iob_clkenrst_portmap import iob_clkenrst_portmap
 from iob_clkenrst_port import iob_clkenrst_port
-from iob_reg import iob_reg
 from iob_reg_r import iob_reg_r
 from iob_reg_re import iob_reg_re
+from iob_ram_t2p import iob_ram_t2p
 
 
 class iob_ila(iob_module):
@@ -31,9 +35,9 @@ class iob_ila(iob_module):
         iob_utils.setup()
         iob_clkenrst_portmap.setup()
         iob_clkenrst_port.setup()
-        iob_reg.setup()
         iob_reg_r.setup()
         iob_reg_re.setup()
+        iob_ram_t2p.setup()
 
         cls._setup_confs()
         cls._setup_ios()
@@ -48,6 +52,55 @@ class iob_ila(iob_module):
 
         # Setup core using LIB function
         setup(cls)
+
+    @classmethod
+    def generate_system_wires(cls, system_source_file, ila_instance_name, sampling_clk, trigger_list, probe_list):
+        # Make sure output file exists
+        if not os.path.isfile(os.path.join(cls.build_dir, system_source_file)):
+            raise Exception(f"{iob_colors.FAIL}ILA: Output file '{cls.build_dir}/{system_source_file}' not found!{iob_colors.ENDC}")
+
+        # Connect sampling clock
+        generated_verilog_code=f"// Auto-generated connections for {ila_instance_name}\n"
+        generated_verilog_code+=f"assign {ila_instance_name}_sampling_clk = {sampling_clk};\n"
+
+        # Generate ila_format_data from trigger_list and probe_list
+        ila_format_data = get_format_data(trigger_list, probe_list)
+
+        # Generate verilog code for ILA connections
+        generated_verilog_code += generate_verilog_source(ila_instance_name, ila_format_data)
+
+        # Read system source file
+        with open(f"{cls.build_dir}/{system_source_file}", "r") as system_source:
+            lines = system_source.readlines()
+        # Find `endmodule`
+        for idx, line in enumerate(lines):
+            if line.startswith("endmodule"):
+                endmodule_index = idx - 1
+                break
+        else:
+            raise Exception(f"{iob_colors.FAIL}ILA: Could not find 'endmodule' declaration in '{cls.build_dir}/{system_source_file}'!{iob_colors.ENDC}")
+
+        # Insert ILA generated connections in the system source code
+        for line in generated_verilog_code.splitlines(True):
+            lines.insert(endmodule_index, "   "+line)
+            endmodule_index += 1
+
+        # Write new system source file with ILA connections
+        with open(f"{cls.build_dir}/{system_source_file}", "w") as system_source:
+            system_source.writelines(lines)
+
+        ## Generate driver source aswell
+        cls.generate_driver_sources(ila_instance_name, trigger_list, probe_list)
+
+    @classmethod
+    def generate_driver_sources(cls, ila_instance_name, trigger_list, probe_list):
+        # Generate ila_format_data from trigger_list and probe_list
+        ila_format_data = get_format_data(trigger_list, probe_list)
+
+        # Generate driver source file
+        generate_driver_source(ila_instance_name, ila_format_data, os.path.join(cls.build_dir, "software/src/", f"{ila_instance_name}.h"))
+
+
 
     @classmethod
     def _setup_confs(cls):
@@ -106,7 +159,7 @@ class iob_ila(iob_module):
                 {
                     "name": "SIGNAL_W",
                     "type": "P",
-                    "val": "0",
+                    "val": "32",
                     "min": "NA",
                     "max": "9999",
                     "descr": "Width of the sampler signal input",
@@ -114,7 +167,7 @@ class iob_ila(iob_module):
                 {
                     "name": "BUFFER_W",
                     "type": "P",
-                    "val": "0",
+                    "val": "10",
                     "min": "NA",
                     "max": "NA",
                     "descr": "Size of the buffer to store samples.",
@@ -122,7 +175,7 @@ class iob_ila(iob_module):
                 {
                     "name": "TRIGGER_W",
                     "type": "P",
-                    "val": "0",
+                    "val": "32",
                     "min": "NA",
                     "max": "32",
                     "descr": "Width of the trigger input",
