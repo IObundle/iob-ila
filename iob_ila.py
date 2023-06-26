@@ -192,7 +192,7 @@ class iob_ila(iob_module):
                 {
                     "name": "BUFFER_W",
                     "type": "P",
-                    "val": "10",
+                    "val": "16",
                     "min": "NA",
                     "max": "NA",
                     "descr": "Size of the buffer to store samples.",

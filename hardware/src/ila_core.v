@@ -40,16 +40,8 @@ module ila_core #(
    input arst_i
 );
 
-   function static [31:0] fix_sim(input [31:0] in);
-`ifdef SIM
-      integer i;
-      for (i = 0; i < 32; i = i + 1) fix_sim[i] = (in[i] === 1'bx ? 1'b0 : in[i]);
-`else
-      fix_sim = in;
-`endif
-   endfunction
+   reg [SIGNAL_W-1:0] registed_signal_1;
 
-   reg [2**$clog2(SIGNAL_W)-1:0] registed_signal_1;
    reg [          TRIGGER_W-1:0] registed_trigger_1;
 
    always @(posedge clk_i, posedge arst_i) begin
@@ -105,7 +97,7 @@ module ila_core #(
    wire previous_trigger, trigger_enable_wr_2;
    iob_reg_r #(
       .DATA_W (1),
-      .RST_VAL(0),
+      .RST_VAL(0)
    ) previous_trigger_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -119,7 +111,7 @@ module ila_core #(
    // Add a "pipeline" register to the trigger
    iob_reg_r #(
       .DATA_W (1),
-      .RST_VAL(0),
+      .RST_VAL(0)
    ) trigger_enable_wr_2_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -130,10 +122,10 @@ module ila_core #(
    );
 
    // SIGNAL LOGIC
-   wire [2**$clog2(SIGNAL_W)-1:0] previous_signal, signal_data_2;
+   wire [SIGNAL_W-1:0] previous_signal, signal_data_2;
    iob_reg_r #(
-      .DATA_W (2**$clog2(SIGNAL_W)),
-      .RST_VAL(0),
+      .DATA_W (SIGNAL_W),
+      .RST_VAL(0)
    ) previous_signal_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -143,13 +135,11 @@ module ila_core #(
       .data_o(previous_signal)
    );
 
-   wire [2**$clog2(
-SIGNAL_W
-)-1:0] final_signal_1 = (delay_signal ? previous_signal : registed_signal_1);
+   wire [SIGNAL_W-1:0] final_signal_1 = (delay_signal ? previous_signal : registed_signal_1);
    // Add a "pipeline" register to the signal
    iob_reg_r #(
-      .DATA_W (2**$clog2(SIGNAL_W)),
-      .RST_VAL(0),
+      .DATA_W (SIGNAL_W),
+      .RST_VAL(0)
    ) signal_data_2_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -171,27 +161,32 @@ SIGNAL_W
 
    wire full = ((&n_samples) == 1'b1);
    iob_reg_re #(
-      .RST_VAL(1'b0),
-      .DATA_W (BUFFER_W)
+      .DATA_W (BUFFER_W),
+      .RST_VAL(1'b0)
    ) n_samples_reg (
       .clk_i(sampling_clk),
       .arst_i(arst_i),
       .rst_i(rst_int),
       .cke_i(cke_i),
       .en_i(write_en_2 && !full),
-      .data_i(n_samples+1),
+      .data_i(n_samples+1'b1),
       .data_o(n_samples)
    );
 
    // Memory instance
-   wire [2**$clog2(SIGNAL_W)-1:0] data_out;
+   wire [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:0] data_out; //Create a wire that is multiple of DATA_W
+   // Connect extra bits to ground
+   generate if (DATA_W%SIGNAL_W != 0)
+      assign data_out [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:SIGNAL_W] = 'b0;
+   endgenerate
+
    iob_ram_t2p #(
       .DATA_W(SIGNAL_W),
       .ADDR_W(BUFFER_W)
    ) buffer (
       .w_clk_i (sampling_clk),
       .w_en_i  (write_en_2),
-      .w_data_i(signal_data_2[SIGNAL_W-1:0]),
+      .w_data_i(signal_data_2),
       .w_addr_i(n_samples),
       .r_clk_i (clk_i),
       .r_addr_i(index),
@@ -216,7 +211,7 @@ SIGNAL_W
    assign samples = sys_samples;
 
    // Special trigger - Different signal logic
-   reg [2**$clog2(SIGNAL_W)-1:0] last_written_signal;
+   reg [SIGNAL_W-1:0] last_written_signal;
 
    assign different_signal_enable_wr = ((last_written_signal != signal_data_2) | !diff_signal);
 
@@ -245,7 +240,7 @@ SIGNAL_W
                 ii = ii + 1
             ) begin
                if (value_select == ii) begin
-                  value_out <= fix_sim(32'h0 | data_out[32*ii+:32]);
+                  value_out <= data_out[DATA_W*ii+:DATA_W];
                end
             end
          end
@@ -258,7 +253,7 @@ SIGNAL_W
    wire [TRIGGER_W-1:0] trigger_value_reg;
    iob_reg_r #(
       .DATA_W (TRIGGER_W),
-      .RST_VAL(0),
+      .RST_VAL(0)
    ) trigger_value_reg_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -280,7 +275,7 @@ SIGNAL_W
    wire [TRIGGER_W-1:0] active_trigger_reg;
    iob_reg_r #(
       .DATA_W (TRIGGER_W),
-      .RST_VAL(0),
+      .RST_VAL(0)
    ) active_trigger_reg_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -299,6 +294,13 @@ SIGNAL_W
       .data_o(active_triggers)
    );
 
+    //Create a wire that is multiple of DATA_W
+   wire [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned = registed_signal_1;
+   // Connect extra bits to ground
+   generate if (DATA_W%SIGNAL_W != 0)
+      assign registed_signal_aligned [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:SIGNAL_W] = 'b0;
+   endgenerate
+
    // Partition current signal into various pieces
    integer              iii;
    reg     [DATA_W-1:0] current_signal;
@@ -313,7 +315,7 @@ SIGNAL_W
              iii = iii + 1
          ) begin
             if (value_select == iii) begin
-               current_signal = fix_sim(32'h0 | registed_signal_1[32*iii+:32]);
+               current_signal = registed_signal_aligned[DATA_W*iii+:DATA_W];
             end
          end
       end
@@ -322,7 +324,7 @@ SIGNAL_W
    wire [DATA_W-1:0] signal_value_reg;
    iob_reg_r #(
       .DATA_W (DATA_W),
-      .RST_VAL(0),
+      .RST_VAL(0)
    ) signal_value_reg_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -333,7 +335,7 @@ SIGNAL_W
    );
 
    ila_sig_clk #(
-      TRIGGER_W
+      DATA_W
    ) value_sig_clk (
       .clk_i (sampling_clk),
       .arst_i(arst_i),

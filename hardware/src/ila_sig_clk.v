@@ -3,8 +3,8 @@
 module ila_sig_clk #(
    parameter W = 0
 ) (
-   input [W-1:0] clk_i,
-   input [W-1:0] arst_i,
+   input clk_i,
+   input arst_i,
    input [W-1:0] data_i,
    output reg [W-1:0] data_o
 );

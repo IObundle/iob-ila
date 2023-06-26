@@ -36,22 +36,22 @@ module iob_ila #(
       .sampling_clk(sampling_clk),
 
       // Trigger and signal configuration
-      .trigger_type  (TRIGGER_TYPE),
-      .negate_trigger(TRIGGER_NEGATE),
-      .trigger_mask  (TRIGGER_MASK),
+      .trigger_type  (TRIGGER_TYPE[0+:TRIGGER_W]),
+      .negate_trigger(TRIGGER_NEGATE[0+:TRIGGER_W]),
+      .trigger_mask  (TRIGGER_MASK[0+:TRIGGER_W]),
 
       // Mask for special triggers
       .misc_enabled(MISCELLANEOUS),
 
       // Software side access to values sampled
-      .index       (INDEX),
-      .samples     (N_SAMPLES),
+      .index       (INDEX[0+:BUFFER_W]),
+      .samples     (N_SAMPLES[0+:BUFFER_W]),
       .value       (SAMPLE_DATA),
-      .value_select(SIGNAL_SELECT),
+      .value_select(SIGNAL_SELECT[0+:`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)]),
 
       .current_value  (CURRENT_DATA),
-      .trigger_value  (CURRENT_TRIGGERS),
-      .active_triggers(CURRENT_ACTIVE_TRIGGERS),
+      .trigger_value  (CURRENT_TRIGGERS[0+:TRIGGER_W]),
+      .active_triggers(CURRENT_ACTIVE_TRIGGERS[0+:TRIGGER_W]),
 
       // Enabled reset and system clk
       .clk_i(clk_i),
