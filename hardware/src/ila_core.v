@@ -148,8 +148,8 @@ SIGNAL_W
 )-1:0] final_signal_1 = (delay_signal ? previous_signal : registed_signal_1);
    // Add a "pipeline" register to the signal
    iob_reg_r #(
-      .DATA_W (1),
-      .RST_VAL( 0),
+      .DATA_W (2**$clog2(SIGNAL_W)),
+      .RST_VAL(0),
    ) signal_data_2_reg (
       .clk_i (sampling_clk),
       .arst_i(arst_i),

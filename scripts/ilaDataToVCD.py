@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
 from ilaBase import Tokenize,ParseSignal,IsWire
+import ilaInstanceFormats
 import sys
 
 if(len(sys.argv) != 4):
-	print("Need three arguments, format file, data input file name and output file name")
+	print("""Need three arguments: 
+	   1) ILA instance name: string used to obtain correct format from the `ilaInstanceFormats.py` library;
+	   2) Data input file path;
+	   3) VCD output file path.
+""")
 	sys.exit(0)
 
 dataFile = open(sys.argv[2],"r")
@@ -12,8 +17,9 @@ dataFile = open(sys.argv[2],"r")
 dataIn = [x.strip() for x in dataFile.readlines()]
 dataIn = [x for x in dataIn if x != ''] # Remove empty lines
 
-formatFile = open(sys.argv[1],"r")
-formatData = ParseSignal(Tokenize(formatFile.read()))
+# Get format for this instance based on formats stored in `ilaInstanceFormats.py`
+assert sys.argv[1] in vars(ilaInstanceFormats), "Error: Unknown ILA instance name"
+formatData = vars(ilaInstanceFormats)[sys.argv[1]]
 
 # Easier to work in strings
 def HexToBin(hexStr):

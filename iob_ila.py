@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 
 from iob_module import iob_module
 from setup import setup
@@ -50,8 +51,29 @@ class iob_ila(iob_module):
         # Copy sources of this module to the build directory
         super()._run_setup()
 
+        # Copy ilaDataToVCD script to the build directory
+        os.makedirs(os.path.join(cls.build_dir,"scripts"), exist_ok=True)
+        shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaBase.py"), os.path.join(cls.build_dir,"scripts/"))
+        shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaDataToVCD.py"), os.path.join(cls.build_dir,"scripts/"))
+
         # Setup core using LIB function
         setup(cls)
+
+    # Given an instance name and its corresponding format_data, store them in the `ilaInstanceFormats.py` library for usage with the `ilaDataToVCD.py` script.
+    @classmethod
+    def __add_format_to_library(cls, ila_instance_name, ila_format_data):
+        # Create library if it does not exist
+        if not os.path.isfile(os.path.join(cls.build_dir, "scripts/ilaInstanceFormats.py")):
+            with open(os.path.join(cls.build_dir, "scripts/ilaInstanceFormats.py"), "w") as f:
+                f.write("#!/usr/bin/env python3\n")
+                f.write("# This script is a library of data formats for each iob-ila instance.\n")
+            # Add execute permission
+            os.chmod(os.path.join(cls.build_dir, "scripts/ilaInstanceFormats.py"), 0o755)
+
+        # Add format of this intance to the file
+        with open(os.path.join(cls.build_dir, "scripts/ilaInstanceFormats.py"), "a") as f:
+            f.write(f"{ila_instance_name}={ila_format_data}\n")
+
 
     @classmethod
     def generate_system_wires(cls, system_source_file, ila_instance_name, sampling_clk, trigger_list, probe_list):
@@ -88,6 +110,9 @@ class iob_ila(iob_module):
         # Write new system source file with ILA connections
         with open(f"{cls.build_dir}/{system_source_file}", "w") as system_source:
             system_source.writelines(lines)
+
+        # Add format data of this instance to the library
+        cls.__add_format_to_library(ila_instance_name, ila_format_data)
 
         ## Generate driver source aswell
         cls.generate_driver_sources(ila_instance_name, trigger_list, probe_list)
