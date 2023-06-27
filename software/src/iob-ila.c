@@ -112,20 +112,20 @@ void ila_set_reduce_type(int reduceType){
 
 // Returns the number of samples currently stored in the ila buffer
 int ila_number_samples(){
-    return IOB_ILA_GET_SAMPLES();
+    return IOB_ILA_GET_N_SAMPLES();
 }
 
 // Returns the value as a 32 bit of the sample at position index
 int ila_get_value(int index){
     IOB_ILA_SET_SIGNAL_SELECT(0);
     IOB_ILA_SET_INDEX(index);
-    return IOB_ILA_GET_DATA();
+    return IOB_ILA_GET_SAMPLE_DATA();
 }
 
 int ila_get_large_value(int index,int partSelect){
     IOB_ILA_SET_SIGNAL_SELECT(partSelect);
     IOB_ILA_SET_INDEX(index);
-    return IOB_ILA_GET_DATA();
+    return IOB_ILA_GET_SAMPLE_DATA();
 }
 
 

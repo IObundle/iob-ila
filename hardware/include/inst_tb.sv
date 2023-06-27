@@ -8,7 +8,7 @@
       
       .valid     (ila_valid),
       .address   (ila_addr),
-      .wdata     (ila_wdata[`ILA_WDATA_W-1:0]),
+      .wdata     (ila_wdata[`IOB_ILA_WDATA_W-1:0]),
       .wstrb     (ila_wstrb),
       .rdata     (ila_rdata),
       .ready     (ila_ready),

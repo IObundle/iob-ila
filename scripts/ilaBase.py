@@ -96,3 +96,15 @@ def ParseSignal(tokens):
 		parsed.append([left,right])
 
 	return parsed
+
+def get_format_data(trigger_list, probe_list):
+	format_data = []
+	# Each trigger entry is a string witht the name of the trigger signal
+	for trigger in trigger_list:
+		format_data.append((TRIGGER,trigger))
+
+	# Each probe entry is a tuple with the probe name and size.
+	for probe in probe_list:
+		format_data.append(probe)
+	
+	return format_data

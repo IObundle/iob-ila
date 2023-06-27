@@ -63,10 +63,13 @@ void ila_set_different_signal_storing(int enabled_bool);
 void ila_print_current_configuration();
 
 // Get size needed for buffer argument for ila_output_data (need to generate source from format file, otherwise linker error)
-int ila_output_data_size(int number_samples);
+int ila_output_data_size(int number_samples, int ila_dword_size);
 
 // Output ila data to later be transformed into a vcd file (need to generate source from format file, otherwise linker error)
-int ila_output_data(char* buffer,int start,int end); // Returns number of samples outputted, doesn't check buffer size (need to make sure that buffer can store everyting [see ila_output_data_size])
+// buffer: Pointer to the buffer
+// start, end: Start and end sample number, respectively.
+// ila_dword_size: Number of words per sample. Value is auto generated for each instance, in file <instance_name>.h (for example ILA0.h)
+int ila_output_data(char* buffer,int start, int end, int ila_dword_size); // Returns number of samples outputted, doesn't check buffer size (need to make sure that buffer can store everyting [see ila_output_data_size])
 
 // Output everything to output (need to generate source from format file, otherwise linker error)
-void ila_output_everything();
+void ila_output_everything(int ila_dword_size);
