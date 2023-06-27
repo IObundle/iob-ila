@@ -23,12 +23,12 @@ The following steps describe the process of creating an ILA peripheral in an IOb
 1) Import the `iob_ila` class
 2) Run the `iob_ila.setup()` method to copy the required sources of this module to the build directory.
 3) Run the `iob_ila.instance(...)` method to create a Verilog instance of the ILA peripheral.
-To insert this core as a peripheral of an IOb-SoC-based system:
-  4) Add the created instance to the peripherals list of the IOb-SoC-based system.
-  5) Call the `_run_setup()` method of IOb-SoC to create the system Verilog source in the build directory.
-  6) Call the `iob_ila.generate_system_wires(...)` method to generate and insert the probe wires inside the ILA source file.
-  7) Use the `_setup_portmap()` method of IOb-SoC to map IOs of the ILA peripheral to the internal system wires.
-  8) Write the firmware to run in the system, including the `iob-ila.h` C header and use its driver functions to control this core.
+4) Use this core as a peripheral of an IOb-SoC-based system:
+    1) Add the created instance to the peripherals list of the IOb-SoC-based system.
+    2) Call the `_run_setup()` method of IOb-SoC to create the system Verilog source in the build directory.
+    3) Call the `iob_ila.generate_system_wires(...)` method to generate and insert the probe wires inside the ILA source file.
+    4) Use the `_setup_portmap()` method of IOb-SoC to map IOs of the ILA peripheral to the internal system wires.
+    5) Write the firmware to run in the system, including the `iob-ila.h` C header and use its driver functions to control this core.
 
 To export the sampled data and convert it to a VCD file, do:
 1) Call the `ila_output_data(...)` driver function to export the data.
