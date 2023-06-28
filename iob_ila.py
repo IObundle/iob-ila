@@ -10,6 +10,7 @@ import iob_colors
 from ilaGenerateVerilog import generate_verilog_source
 from ilaGenerateSource import generate_driver_source
 from ilaBase import get_format_data
+from iob_verilog_instance import iob_verilog_instance
 
 # Submodules
 from iob_lib import iob_lib
@@ -76,20 +77,16 @@ class iob_ila(iob_module):
 
 
     @classmethod
-    def generate_system_wires(cls, system_source_file, ila_instance_name, sampling_clk, trigger_list, probe_list):
+    def generate_system_wires(cls, ila_instance: iob_verilog_instance, system_source_file, sampling_clk, trigger_list, probe_list):
         # Make sure output file exists
-        if not os.path.isfile(os.path.join(cls.build_dir, system_source_file)):
-            raise Exception(f"{iob_colors.FAIL}ILA: Output file '{cls.build_dir}/{system_source_file}' not found!{iob_colors.ENDC}")
+        assert os.path.isfile(os.path.join(cls.build_dir, system_source_file)), f"{iob_colors.FAIL}ILA: Output file '{cls.build_dir}/{system_source_file}' not found!{iob_colors.ENDC}"
 
         # Connect sampling clock
-        generated_verilog_code=f"// Auto-generated connections for {ila_instance_name}\n"
-        generated_verilog_code+=f"assign {ila_instance_name}_sampling_clk = {sampling_clk};\n"
-
-        # Generate ila_format_data from trigger_list and probe_list
-        ila_format_data = get_format_data(trigger_list, probe_list)
+        generated_verilog_code=f"// Auto-generated connections for {ila_instance.name}\n"
+        generated_verilog_code+=f"assign {ila_instance.name}_sampling_clk = {sampling_clk};\n"
 
         # Generate verilog code for ILA connections
-        generated_verilog_code += generate_verilog_source(ila_instance_name, ila_format_data)
+        generated_verilog_code += generate_verilog_source(ila_instance.name, get_format_data(trigger_list, probe_list))
 
         # Read system source file
         with open(f"{cls.build_dir}/{system_source_file}", "r") as system_source:
@@ -111,11 +108,26 @@ class iob_ila(iob_module):
         with open(f"{cls.build_dir}/{system_source_file}", "w") as system_source:
             system_source.writelines(lines)
 
+        # Add 'TOP.' prefix to every probe and trigger
+        for i in range(len(probe_list)):
+            probe_list[i] = ("TOP."+probe_list[i][0], probe_list[i][1])
+        for i in range(len(trigger_list)):
+            trigger_list[i] = "TOP."+trigger_list[i]
+
+        # If the ILA instance has an internal sampling clock counter, add a probe for it in the probe_list
+        if "CLK_COUNTER" in ila_instance.parameters and ila_instance.parameters["CLK_COUNTER"] == "1":
+            if "CLK_COUNTER_W" in ila_instance.parameters:
+                clk_width = ila_instance.parameters["CLK_COUNTER_W"]
+            else:
+                clk_width = next(i['val'] for i in cls.confs if i['name']=="CLK_COUNTER_W")
+            # Insert sampling clock counter probe at the start of the list
+            probe_list.insert(0, (f"TOP.{ila_instance.name}.sampling_clk_counter", int(clk_width)))
+
         # Add format data of this instance to the library
-        cls.__add_format_to_library(ila_instance_name, ila_format_data)
+        cls.__add_format_to_library(ila_instance.name, get_format_data(trigger_list, probe_list))
 
         ## Generate driver source aswell
-        cls.generate_driver_sources(ila_instance_name, trigger_list, probe_list)
+        cls.generate_driver_sources(ila_instance.name, trigger_list, probe_list)
 
     @classmethod
     def generate_driver_sources(cls, ila_instance_name, trigger_list, probe_list):
@@ -202,8 +214,24 @@ class iob_ila(iob_module):
                     "type": "P",
                     "val": "32",
                     "min": "NA",
-                    "max": "32",
+                    "max": "9999",
                     "descr": "Width of the trigger input",
+                },
+                {
+                    "name": "CLK_COUNTER",
+                    "type": "P",
+                    "val": "0",
+                    "min": "0",
+                    "max": "1",
+                    "descr": "Select if ILA should contain an internal sampling clock counter. If enabled, will connect its value to the lsb CLK_COUNTER_W bits of the sample_data. Useful to obtain timestamps of samples.",
+                },
+                {
+                    "name": "CLK_COUNTER_W",
+                    "type": "P",
+                    "val": "16",
+                    "min": "NA",
+                    "max": "NA",
+                    "descr": "Width of the clock counter input",
                 },
             ]
         )

@@ -8,7 +8,9 @@ module ila_core #(
    parameter DATA_W    = 0,
    parameter SIGNAL_W  = 0,
    parameter BUFFER_W  = 0,
-   parameter TRIGGER_W = 0
+   parameter TRIGGER_W = 0,
+   parameter CLK_COUNTER = 0, // Select if should contain an internal clock counter.
+   parameter CLK_COUNTER_W = 0 // Size of clock counter
 ) (
    // Trigger and signals to sample
    input [ SIGNAL_W-1:0] signal,
@@ -40,7 +42,32 @@ module ila_core #(
    input arst_i
 );
 
-   reg [SIGNAL_W-1:0] registed_signal_1;
+   // Internal signal width, equals
+   localparam I_SIGNAL_W = CLK_COUNTER>0 ? SIGNAL_W+CLK_COUNTER_W : SIGNAL_W;
+   wire [I_SIGNAL_W-1:0] i_signal;
+
+   generate 
+      if (CLK_COUNTER>0) begin
+         // Create clock counter
+         wire [CLK_COUNTER_W-1:0] clk_counter;
+         iob_reg_r #(
+            .DATA_W (CLK_COUNTER_W),
+            .RST_VAL(1'b0)
+         ) clk_counter_reg (
+            .clk_i(sampling_clk),
+            .arst_i(arst_i),
+            .rst_i(rst_int),
+            .cke_i(cke_i),
+            .data_i(clk_counter+1'b1),
+            .data_o(clk_counter)
+         );
+         // Connect channel 0 to the output of clk_counter
+         assign i_signal = {signal,clk_counter};
+      end else
+         assign i_signal = signal;
+   endgenerate
+
+   reg [I_SIGNAL_W-1:0] registed_signal_1;
 
    reg [          TRIGGER_W-1:0] registed_trigger_1;
 
@@ -49,7 +76,7 @@ module ila_core #(
          registed_signal_1  <= 0;
          registed_trigger_1 <= 0;
       end else begin
-         registed_signal_1  <= signal;
+         registed_signal_1  <= i_signal;
          registed_trigger_1 <= trigger;
       end
    end
@@ -122,9 +149,9 @@ module ila_core #(
    );
 
    // SIGNAL LOGIC
-   wire [SIGNAL_W-1:0] previous_signal, signal_data_2;
+   wire [I_SIGNAL_W-1:0] previous_signal, signal_data_2;
    iob_reg_r #(
-      .DATA_W (SIGNAL_W),
+      .DATA_W (I_SIGNAL_W),
       .RST_VAL(0)
    ) previous_signal_reg (
       .clk_i (sampling_clk),
@@ -135,10 +162,10 @@ module ila_core #(
       .data_o(previous_signal)
    );
 
-   wire [SIGNAL_W-1:0] final_signal_1 = (delay_signal ? previous_signal : registed_signal_1);
+   wire [I_SIGNAL_W-1:0] final_signal_1 = (delay_signal ? previous_signal : registed_signal_1);
    // Add a "pipeline" register to the signal
    iob_reg_r #(
-      .DATA_W (SIGNAL_W),
+      .DATA_W (I_SIGNAL_W),
       .RST_VAL(0)
    ) signal_data_2_reg (
       .clk_i (sampling_clk),
@@ -174,14 +201,14 @@ module ila_core #(
    );
 
    // Memory instance
-   wire [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:0] data_out; //Create a wire that is multiple of DATA_W
+   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] data_out; //Create a wire that is multiple of DATA_W
    // Connect extra bits to ground
-   generate if (DATA_W%SIGNAL_W != 0)
-      assign data_out [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:SIGNAL_W] = 'b0;
+   generate if (DATA_W%I_SIGNAL_W != 0)
+      assign data_out [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:I_SIGNAL_W] = 'b0;
    endgenerate
 
    iob_ram_t2p #(
-      .DATA_W(SIGNAL_W),
+      .DATA_W(I_SIGNAL_W),
       .ADDR_W(BUFFER_W)
    ) buffer (
       .w_clk_i (sampling_clk),
@@ -191,7 +218,7 @@ module ila_core #(
       .r_clk_i (clk_i),
       .r_addr_i(index),
       .r_en_i  (1'b1),
-      .r_data_o(data_out[SIGNAL_W-1:0])
+      .r_data_o(data_out[I_SIGNAL_W-1:0])
    );
 
    // Pass n_samples from sampling_clk domain to sys domain
@@ -211,7 +238,7 @@ module ila_core #(
    assign samples = sys_samples;
 
    // Special trigger - Different signal logic
-   reg [SIGNAL_W-1:0] last_written_signal;
+   reg [I_SIGNAL_W-1:0] last_written_signal;
 
    assign different_signal_enable_wr = ((last_written_signal != signal_data_2) | !diff_signal);
 
@@ -231,12 +258,12 @@ module ila_core #(
       if (arst_i) begin
          value_out <= 0;
       end else begin
-         if (DATA_W >= SIGNAL_W) value_out <= data_out;
+         if (DATA_W >= I_SIGNAL_W) value_out <= data_out;
          else begin
             for (
                 ii = 0;
                 ii <
-                `CEIL_DIV(SIGNAL_W, DATA_W);
+                `CEIL_DIV(I_SIGNAL_W, DATA_W);
                 ii = ii + 1
             ) begin
                if (value_select == ii) begin
@@ -295,10 +322,10 @@ module ila_core #(
    );
 
     //Create a wire that is multiple of DATA_W
-   wire [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned = registed_signal_1;
+   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned = registed_signal_1;
    // Connect extra bits to ground
-   generate if (DATA_W%SIGNAL_W != 0)
-      assign registed_signal_aligned [`CEIL_DIV(SIGNAL_W,DATA_W)*DATA_W-1:SIGNAL_W] = 'b0;
+   generate if (DATA_W%I_SIGNAL_W != 0)
+      assign registed_signal_aligned [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:I_SIGNAL_W] = 'b0;
    endgenerate
 
    // Partition current signal into various pieces
@@ -306,12 +333,12 @@ module ila_core #(
    reg     [DATA_W-1:0] current_signal;
    always @* begin
       current_signal = 32'h0;
-      if (DATA_W >= SIGNAL_W) current_signal = registed_signal_1;
+      if (DATA_W >= I_SIGNAL_W) current_signal = registed_signal_1;
       else begin
          for (
              iii = 0;
              iii <
-             `CEIL_DIV(SIGNAL_W, DATA_W);
+             `CEIL_DIV(I_SIGNAL_W, DATA_W);
              iii = iii + 1
          ) begin
             if (value_select == iii) begin

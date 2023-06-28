@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 #define ILA_TRIGGER_TYPE_SINGLE     0
 #define ILA_TRIGGER_TYPE_CONTINUOUS 1
 
@@ -42,13 +44,13 @@ int ila_number_samples();
 int ila_get_value(int index); 
 
 // Returns 32 bits of the signal (each partSelect selects one 32 bit part)
-int ila_get_large_value(int index,int partSelect); // For signals bigger than 32 bits, they are partition into 32 bit parts which are selected by partSelect (0 -> first 32 bits, 1 -> second 32 bits and so on)
+uint32_t ila_get_large_value(int index,int partSelect); // For signals bigger than 32 bits, they are partition into 32 bit parts which are selected by partSelect (0 -> first 32 bits, 1 -> second 32 bits and so on)
 
 // Returns the value of the signal right now (does not mean it is stored in the buffer)
 int ila_get_current_value();
 
 // Returns 32 bits of the value of the signal right now
-int ila_get_current_large_value(int partSelect);
+uint32_t ila_get_current_large_value(int partSelect);
 
 // Returns the value of the trigger signal, directly from input (does not take into account negation or type)
 int ila_get_current_triggers();
