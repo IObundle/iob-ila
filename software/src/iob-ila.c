@@ -122,7 +122,7 @@ int ila_get_value(int index){
     return IOB_ILA_GET_SAMPLE_DATA();
 }
 
-int ila_get_large_value(int index,int partSelect){
+uint32_t ila_get_large_value(int index,int partSelect){
     IOB_ILA_SET_SIGNAL_SELECT(partSelect);
     IOB_ILA_SET_INDEX(index);
     return IOB_ILA_GET_SAMPLE_DATA();
@@ -136,7 +136,7 @@ int ila_get_current_value(){
 }
 
 // Returns 32 bits of the value of the signal right now
-int ila_get_current_large_value(int partSelect){
+uint32_t ila_get_current_large_value(int partSelect){
     IOB_ILA_SET_SIGNAL_SELECT(partSelect);
     return IOB_ILA_GET_CURRENT_DATA();
 }

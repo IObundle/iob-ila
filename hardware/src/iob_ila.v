@@ -25,10 +25,12 @@ module iob_ila #(
    `include "iob_ila_swreg_inst.vs"
 
    ila_core #(
-      .DATA_W   (DATA_W),
-      .SIGNAL_W (SIGNAL_W),
-      .BUFFER_W (BUFFER_W),
-      .TRIGGER_W(TRIGGER_W)
+      .DATA_W       (DATA_W),
+      .SIGNAL_W     (SIGNAL_W),
+      .BUFFER_W     (BUFFER_W),
+      .TRIGGER_W    (TRIGGER_W),
+      .CLK_COUNTER  (CLK_COUNTER),
+      .CLK_COUNTER_W(CLK_COUNTER_W)
    ) ila_core0 (
       // Trigger and signals to sample
       .signal      (signal),

@@ -25,8 +25,6 @@ def generate_driver_source(ila_instance_name, formatData, sourceFilename):
 	#text += f"#define {ila_instance_name.upper()}_TRIGGER_W {trigger_w}\n"
 	text += f"#define {ila_instance_name.upper()}_BUFFER_SIZE (2 ** {ila_instance_name.upper()}_BUFFER_W)\n\n"
 
-	text += '#include "ila_static_generate.c"\n'
-
 	sourceFile.write(text)
 
 if __name__ == "__main__":

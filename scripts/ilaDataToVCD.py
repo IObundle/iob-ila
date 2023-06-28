@@ -97,6 +97,12 @@ for name,size in orderedNames:
 	
 	#print(hierarchy,currentHierarchyName)
 
+	while len(hierarchy) < currentHierarchyIndex + 1:
+		outputFile.write("$upscope $end\n")
+		if currentHierarchyIndex < len(hierarchy):
+			currentHierarchyName = hierarchy[currentHierarchyIndex]
+		currentHierarchyIndex -= 1
+
 	if(currentHierarchyName != "" and hierarchy[currentHierarchyIndex-1] != currentHierarchyName):
 		outputFile.write("$upscope $end\n")
 		outputFile.write("$scope module %s $end\n" % hierarchy[currentHierarchyIndex-1])
@@ -106,11 +112,6 @@ for name,size in orderedNames:
 		outputFile.write("$scope module %s $end\n" % hierarchy[currentHierarchyIndex])
 		currentHierarchyName = hierarchy[currentHierarchyIndex]
 		currentHierarchyIndex += 1
-
-	while len(hierarchy) < currentHierarchyIndex + 1:
-		outputFile.write("$upscope $end\n")
-		currentHierarchyName = hierarchy[currentHierarchyIndex]
-		currentHierarchyIndex -= 1
 
 	outputFile.write("$var wire %d %s %s $end\n" % (size,nameToVarMapping[name],hierarchy[-1],))
 
