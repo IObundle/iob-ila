@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import shutil
 
 from iob_module import iob_module
-from setup import setup
 import iob_colors
 from ilaGenerateVerilog import generate_verilog_source
 from ilaGenerateSource import generate_driver_source
@@ -15,8 +13,6 @@ from iob_verilog_instance import iob_verilog_instance
 # Submodules
 from iob_lib import iob_lib
 from iob_utils import iob_utils
-from iob_clkenrst_portmap import iob_clkenrst_portmap
-from iob_clkenrst_port import iob_clkenrst_port
 from iob_reg_r import iob_reg_r
 from iob_reg_re import iob_reg_re
 from iob_ram_t2p import iob_ram_t2p
@@ -35,8 +31,8 @@ class iob_ila(iob_module):
         iob_module.generate("iob_s_portmap")
         iob_lib.setup()
         iob_utils.setup()
-        iob_clkenrst_portmap.setup()
-        iob_clkenrst_port.setup()
+        iob_module.generate("clk_en_rst_portmap")
+        iob_module.generate("clk_en_rst_port")
         iob_reg_r.setup()
         iob_reg_re.setup()
         iob_ram_t2p.setup()
