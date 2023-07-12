@@ -29,7 +29,7 @@ class iob_ila(iob_module):
     setup_dir = os.path.dirname(__file__)
 
     @classmethod
-    def _run_setup(cls):
+    def _specific_setup(cls):
         # Hardware headers & modules
         iob_module.generate("iob_s_port")
         iob_module.generate("iob_s_portmap")
@@ -41,24 +41,13 @@ class iob_ila(iob_module):
         iob_reg_re.setup()
         iob_ram_t2p.setup()
 
-        cls._setup_confs()
-        cls._setup_ios()
-        cls._setup_regs()
-        cls._setup_block_groups()
-
         # Verilog modules instances
         # TODO
-
-        # Copy sources of this module to the build directory
-        super()._run_setup()
 
         # Copy ilaDataToVCD script to the build directory
         os.makedirs(os.path.join(cls.build_dir,"scripts"), exist_ok=True)
         shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaBase.py"), os.path.join(cls.build_dir,"scripts/"))
         shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaDataToVCD.py"), os.path.join(cls.build_dir,"scripts/"))
-
-        # Setup core using LIB function
-        setup(cls)
 
     # Given an instance name and its corresponding format_data, store them in the `ilaInstanceFormats.py` library for usage with the `ilaDataToVCD.py` script.
     @classmethod

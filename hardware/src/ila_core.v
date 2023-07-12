@@ -46,7 +46,10 @@ module ila_core #(
    localparam I_SIGNAL_W = CLK_COUNTER>0 ? SIGNAL_W+CLK_COUNTER_W : SIGNAL_W;
    wire [I_SIGNAL_W-1:0] i_signal;
 
-   generate 
+   //COMBINED SOFT/HARD RESET
+   wire rst_int = arst_i | rst_soft;
+
+   generate
       if (CLK_COUNTER>0) begin
          // Create clock counter
          wire [CLK_COUNTER_W-1:0] clk_counter;
@@ -87,9 +90,6 @@ module ila_core #(
    wire delay_trigger = misc_enabled[3];
    wire delay_signal = misc_enabled[4];
    wire reduce_type = misc_enabled[5];
-
-   //COMBINED SOFT/HARD RESET
-   wire rst_int = arst_i | rst_soft;
 
    // TRIGGER LOGIC
 
