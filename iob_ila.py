@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import sys
 import shutil
 
 from iob_module import iob_module
-from setup import setup
 import iob_colors
 from ilaGenerateVerilog import generate_verilog_source
 from ilaGenerateSource import generate_driver_source
@@ -15,8 +13,6 @@ from iob_verilog_instance import iob_verilog_instance
 # Submodules
 from iob_lib import iob_lib
 from iob_utils import iob_utils
-from iob_clkenrst_portmap import iob_clkenrst_portmap
-from iob_clkenrst_port import iob_clkenrst_port
 from iob_reg_r import iob_reg_r
 from iob_reg_re import iob_reg_re
 from iob_ram_t2p import iob_ram_t2p
@@ -29,36 +25,31 @@ class iob_ila(iob_module):
     setup_dir = os.path.dirname(__file__)
 
     @classmethod
-    def _run_setup(cls):
-        # Hardware headers & modules
-        iob_module.generate("iob_s_port")
-        iob_module.generate("iob_s_portmap")
-        iob_lib.setup()
-        iob_utils.setup()
-        iob_clkenrst_portmap.setup()
-        iob_clkenrst_port.setup()
-        iob_reg_r.setup()
-        iob_reg_re.setup()
-        iob_ram_t2p.setup()
+    def _create_submodules_list(cls):
+        ''' Create submodules list with dependencies of this module
+        '''
+        super()._create_submodules_list([
+            # Hardware headers & modules
+            "iob_s_port",
+            "iob_s_portmap",
+            iob_lib,
+            iob_utils,
+            "clk_en_rst_portmap",
+            "clk_en_rst_port",
+            iob_reg_r,
+            iob_reg_re,
+            iob_ram_t2p,
+        ])
 
-        cls._setup_confs()
-        cls._setup_ios()
-        cls._setup_regs()
-        cls._setup_block_groups()
-
+    @classmethod
+    def _specific_setup(cls):
         # Verilog modules instances
         # TODO
-
-        # Copy sources of this module to the build directory
-        super()._run_setup()
 
         # Copy ilaDataToVCD script to the build directory
         os.makedirs(os.path.join(cls.build_dir,"scripts"), exist_ok=True)
         shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaBase.py"), os.path.join(cls.build_dir,"scripts/"))
         shutil.copy(os.path.join(cls.setup_dir,"scripts/ilaDataToVCD.py"), os.path.join(cls.build_dir,"scripts/"))
-
-        # Setup core using LIB function
-        setup(cls)
 
     # Given an instance name and its corresponding format_data, store them in the `ilaInstanceFormats.py` library for usage with the `ilaDataToVCD.py` script.
     @classmethod

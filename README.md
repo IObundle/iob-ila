@@ -25,7 +25,7 @@ The following steps describe the process of creating an ILA peripheral in an IOb
 3) Run the `iob_ila.instance(...)` method to create a Verilog instance of the ILA peripheral.
 4) Use this core as a peripheral of an IOb-SoC-based system:
     1) Add the created instance to the peripherals list of the IOb-SoC-based system.
-    2) Call the `_run_setup()` method of IOb-SoC to create the system Verilog source in the build directory.
+    2) Call the `_post_setup()` method of IOb-SoC to create the system Verilog source in the build directory.
     3) Call the `iob_ila.generate_system_wires(...)` method to generate and insert the probe wires inside the ILA source file.
     4) Use the `_setup_portmap()` method of IOb-SoC to map IOs of the ILA peripheral to the internal system wires.
     5) Write the firmware to run in the system, including the `iob-ila.h` C header and use its driver functions to control this core.
@@ -48,7 +48,7 @@ class iob_soc_tester(iob_soc):
   ...
   # Method that runs the setup process of the Tester system
   @classmethod
-  def _run_setup(cls):
+  def _post_setup(cls):
     ...
     # Setup the ILA module (Copies every file and dependency required to the build directory)
     iob_ila.setup()
@@ -67,7 +67,7 @@ class iob_soc_tester(iob_soc):
     )
     ...
     # Run IOb-SoC setup (will also copy the Tester sources)
-    super()._run_setup()
+    super()._post_setup()
     ...
 
     # Generate Verilog wires to probe signals (they are internal to the Tester system)
