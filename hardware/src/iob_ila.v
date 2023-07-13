@@ -10,16 +10,9 @@ module iob_ila #(
    `include "iob_ila_io.vs"
 );
 
-   wire [         1-1:0] iob_avalid = iob_avalid_i;  //Request valid.
-   wire [    ADDR_W-1:0] iob_addr = iob_addr_i;  //Address.
-   wire [    DATA_W-1:0] iob_wdata = iob_wdata_i;  //Write data.
-   wire [(DATA_W/8)-1:0] iob_wstrb = iob_wstrb_i;  //Write strobe.
-   wire [         1-1:0]                                              iob_rvalid;
-   assign iob_rvalid_o = iob_rvalid;  //Read data valid.
-   wire [DATA_W-1:0] iob_rdata;
-   assign iob_rdata_o = iob_rdata;  //Read data.
-   wire [1-1:0] iob_ready;
-   assign iob_ready_o = iob_ready;  //Interface ready.
+   //Dummy iob_ready_nxt_o and iob_rvalid_nxt_o to be used in swreg (unused ports)
+   wire iob_ready_nxt_o;
+   wire iob_rvalid_nxt_o;
 
    //BLOCK Register File & Configuration control and status register file.
    `include "iob_ila_swreg_inst.vs"
