@@ -30,12 +30,12 @@ class iob_ila(iob_module):
         '''
         super()._create_submodules_list([
             # Hardware headers & modules
-            "iob_s_port",
-            "iob_s_portmap",
+            {"interface": "iob_s_port"},
+            {"interface": "iob_s_portmap"},
             iob_lib,
             iob_utils,
-            "clk_en_rst_portmap",
-            "clk_en_rst_port",
+            {"interface": "clk_en_rst_portmap"},
+            {"interface": "clk_en_rst_port"},
             iob_reg_r,
             iob_reg_re,
             iob_ram_t2p,
