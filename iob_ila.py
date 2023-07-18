@@ -68,16 +68,16 @@ class iob_ila(iob_module):
 
 
     @classmethod
-    def generate_system_wires(cls, ila_instance: iob_verilog_instance, system_source_file, sampling_clk, trigger_list, probe_list):
+    def generate_system_wires(cls, ila_instance, system_source_file, sampling_clk, trigger_list, probe_list):
         # Make sure output file exists
         assert os.path.isfile(os.path.join(cls.build_dir, system_source_file)), f"{iob_colors.FAIL}ILA: Output file '{cls.build_dir}/{system_source_file}' not found!{iob_colors.ENDC}"
 
         # Connect sampling clock
-        generated_verilog_code=f"// Auto-generated connections for {ila_instance.name}\n"
-        generated_verilog_code+=f"assign {ila_instance.name}_sampling_clk = {sampling_clk};\n"
+        generated_verilog_code=f"// Auto-generated connections for {ila_instance.instance_name}\n"
+        generated_verilog_code+=f"assign {ila_instance.instance_name}_sampling_clk = {sampling_clk};\n"
 
         # Generate verilog code for ILA connections
-        generated_verilog_code += generate_verilog_source(ila_instance.name, get_format_data(trigger_list, probe_list))
+        generated_verilog_code += generate_verilog_source(ila_instance.instance_name, get_format_data(trigger_list, probe_list))
 
         # Read system source file
         with open(f"{cls.build_dir}/{system_source_file}", "r") as system_source:
@@ -106,19 +106,19 @@ class iob_ila(iob_module):
             trigger_list[i] = "TOP."+trigger_list[i]
 
         # If the ILA instance has an internal sampling clock counter, add a probe for it in the probe_list
-        if "CLK_COUNTER" in ila_instance.parameters and ila_instance.parameters["CLK_COUNTER"] == "1":
-            if "CLK_COUNTER_W" in ila_instance.parameters:
-                clk_width = ila_instance.parameters["CLK_COUNTER_W"]
+        if "CLK_COUNTER" in ila_instance.instance_parameters and ila_instance.instance_parameters["CLK_COUNTER"] == "1":
+            if "CLK_COUNTER_W" in ila_instance.instance_parameters:
+                clk_width = ila_instance.instance_parameters["CLK_COUNTER_W"]
             else:
                 clk_width = next(i['val'] for i in cls.confs if i['name']=="CLK_COUNTER_W")
             # Insert sampling clock counter probe at the start of the list
-            probe_list.insert(0, (f"TOP.{ila_instance.name}.sampling_clk_counter", int(clk_width)))
+            probe_list.insert(0, (f"TOP.{ila_instance.instance_name}.sampling_clk_counter", int(clk_width)))
 
         # Add format data of this instance to the library
-        cls.__add_format_to_library(ila_instance.name, get_format_data(trigger_list, probe_list))
+        cls.__add_format_to_library(ila_instance.instance_name, get_format_data(trigger_list, probe_list))
 
         ## Generate driver source aswell
-        cls.generate_driver_sources(ila_instance.name, trigger_list, probe_list)
+        cls.generate_driver_sources(ila_instance.instance_name, trigger_list, probe_list)
 
     @classmethod
     def generate_driver_sources(cls, ila_instance_name, trigger_list, probe_list):

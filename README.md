@@ -22,7 +22,7 @@ The `iob_ila.generate_system_wires(...)` method (example below) is used to confi
 The following steps describe the process of creating an ILA peripheral in an IOb-SoC-based system:
 1) Import the `iob_ila` class
 2) Run the `iob_ila.setup()` method to copy the required sources of this module to the build directory.
-3) Run the `iob_ila.instance(...)` method to create a Verilog instance of the ILA peripheral.
+3) Run the `iob_ila(...)` method to create a Verilog instance of the ILA peripheral.
 4) Use this core as a peripheral of an IOb-SoC-based system:
     1) Add the created instance to the peripherals list of the IOb-SoC-based system.
     2) Call the `_post_setup()` method of IOb-SoC to create the system Verilog source in the build directory.
@@ -55,7 +55,7 @@ class iob_soc_tester(iob_soc):
     ...
     # Create a Verilog instance of this module, named 'ILA0', and add it to the peripherals list of the system.
     cls.peripherals.append(
-        iob_ila.instance(
+        iob_ila(
             "ILA0", # Verilog instance name
             "Tester Integrated Logic Analyzer for SUT signals", # Instance description
 
