@@ -39,10 +39,10 @@ module iob_ila #(
       .ADDR_W  (ADDR_W),
       .DATA_W  (DATA_W),
       .N_SLAVES(2),
-      .P_SLAVES(`REQ_W-1)
+      .P_SLAVES(`REQ_W-2)
    ) swreg_split (
       .clk_i   (clk_i),
-      .arst_i  (cpu_reset),
+      .arst_i  (arst_i),
       // master interface
       .m_req_i (m_req),
       .m_resp_o(m_resp),

@@ -231,7 +231,7 @@ module ila_core #(
    wire full = ((&n_samples) == 1'b1);
 
    // Write while not full or write always if circular buffer is used
-   wire write_en_3 = write_en_2 && (!full || circular_buffer)
+   wire write_en_3 = write_en_2 && (!full || circular_buffer);
 
    iob_reg_re #(
       .DATA_W (BUFFER_W),
