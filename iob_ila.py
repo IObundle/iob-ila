@@ -8,7 +8,7 @@ import iob_colors
 from ilaGenerateVerilog import generate_verilog_source
 from ilaGenerateSource import generate_driver_source
 from ilaBase import get_format_data
-from iob_verilog_instance import iob_verilog_instance
+import build_srcs
 
 # Submodules
 from iob_lib import iob_lib
@@ -16,6 +16,7 @@ from iob_utils import iob_utils
 from iob_reg_r import iob_reg_r
 from iob_reg_re import iob_reg_re
 from iob_ram_t2p import iob_ram_t2p
+from iob_pfsm import iob_pfsm
 
 
 class iob_ila(iob_module):
@@ -39,6 +40,7 @@ class iob_ila(iob_module):
             iob_reg_r,
             iob_reg_re,
             iob_ram_t2p,
+            iob_pfsm,
         ])
 
     @classmethod
@@ -173,7 +175,7 @@ class iob_ila(iob_module):
                     "type": "P",
                     "val": "32",
                     "min": "NA",
-                    "max": "NA",
+                    "max": "32",
                     "descr": "Data bus width",
                 },
                 # {
@@ -203,9 +205,9 @@ class iob_ila(iob_module):
                 {
                     "name": "TRIGGER_W",
                     "type": "P",
-                    "val": "32",
+                    "val": "4",
                     "min": "NA",
-                    "max": "9999",
+                    "max": "32", # Should not be greater than 4 if using Monitor! Limit due to PFSM max INPUT_W
                     "descr": "Width of the trigger input",
                 },
                 {
@@ -223,6 +225,22 @@ class iob_ila(iob_module):
                     "min": "NA",
                     "max": "NA",
                     "descr": "Width of the clock counter input",
+                },
+                {
+                    "name": "MONITOR",
+                    "type": "P",
+                    "val": "0",
+                    "min": "0",
+                    "max": "1",
+                    "descr": "Select if ILA should contain an internal Monitor based on a Programmable Finite State Machine (PFSM). If enabled, will connect its value to the lsb CLK_COUNTER_W bits of the sample_data. Useful to obtain timestamps of samples.",
+                },
+                {
+                    "name": "MONITOR_STATE_W",
+                    "type": "P",
+                    "val": "4",
+                    "min": "0",
+                    "max": "10",
+                    "descr": "Number of Monitor PFSM states (log2).",
                 },
             ]
         )
@@ -415,6 +433,19 @@ class iob_ila(iob_module):
                         "log2n_items": 0,
                         "autologic": True,
                         "descr": "This value is affected by negation and trigger type. For continuous triggers, returns if the trigger has been activated. For single triggers, returns whether the signal is currently asserted",
+                    },
+                    {
+                        "name": "DUMMY_MONITOR_REG_RANGE",
+                        "type": "W",
+                        "n_bits": "DATA_W",
+                        "rst_val": 0,
+                        "addr": -1,
+                        # Need to have enough items for the Monitor PFSM swreg address space
+                        # Size is the sum of the log2n_items of the following PFSM regs:
+                        # MEMORY (INPUT_W+STATE_W) + MEM_WORD_SELECT (1) + SOFTRESET (1)
+                        "log2n_items": "`IOB_MIN(TRIGGER_W,4)+MONITOR_STATE_W+2",
+                        "autologic": False,
+                        "descr": "Dummy register to reserve register address space for the monitor (iob-pfsm) registers.",
                     },
                 ],
             },
