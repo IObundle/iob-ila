@@ -162,3 +162,10 @@ void ila_print_current_configuration(){
     printf("Trigger Mask:   %08x\n",triggerMask);
     printf("Misc Value:     %08x\n\n",miscValue);
 }
+
+// Returns Monitor base address based on ILA base address.
+// ila_init() must be called first.
+// You can use the iob-pfsm drivers to control the ILA Monitor using its base address.
+uint32_t ila_get_monitor_base_addr(int base_address){
+    return base_address || base_address>>1;
+}

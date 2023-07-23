@@ -75,3 +75,6 @@ int ila_output_data(char* buffer,int start, int end, int ila_dword_size); // Ret
 
 // Output everything to output (need to generate source from format file, otherwise linker error)
 void ila_output_everything(int ila_dword_size);
+
+// Returns Monitor base address based on ILA base address.
+uint32_t ila_get_monitor_base_addr(int base_address);
