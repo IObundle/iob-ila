@@ -3,6 +3,7 @@
 `include "iob_lib.vh"
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
+`include "iob_pfsm_swreg_def.vh"
 
 module ila_core #(
    parameter DATA_W    = 0,
@@ -44,13 +45,13 @@ module ila_core #(
    input arst_i,
 
    // Monitor IOb-Native interface
-   input monitor_avalid_i,
-   input monitor_addr_i,
-   input monitor_wdata_i,
-   input monitor_wstrb_i,
-   output monitor_rvalid_o,
-   output monitor_rdata_o,
-   output monitor_ready_o
+   input [1-1:0]                      monitor_avalid_i,
+   input [`IOB_PFSM_SWREG_ADDR_W-1:0] monitor_addr_i,
+   input [DATA_W-1:0]                 monitor_wdata_i,
+   input [(DATA_W/8)-1:0]             monitor_wstrb_i,
+   output [1-1:0]                     monitor_rvalid_o,
+   output [DATA_W-1:0]                monitor_rdata_o,
+   output [1-1:0]                     monitor_ready_o
 );
 
    // Internal trigger only has 1 bit if the Monitor is used
