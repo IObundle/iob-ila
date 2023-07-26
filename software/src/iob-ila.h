@@ -78,3 +78,6 @@ void ila_output_everything(int ila_dword_size);
 
 // Returns Monitor base address based on ILA base address.
 uint32_t ila_get_monitor_base_addr(int base_address);
+
+// Enable/Disable circular buffer
+void ila_set_circular_buffer(int value);

@@ -167,5 +167,11 @@ void ila_print_current_configuration(){
 // ila_init() must be called first.
 // You can use the iob-pfsm drivers to control the ILA Monitor using its base address.
 uint32_t ila_get_monitor_base_addr(int base_address){
-    return base_address | base_address>>1;
+    return base_address | 1<<(IOB_ILA_SWREG_ADDR_W-1);
+}
+
+// Enable/Disable circular buffer
+void ila_set_circular_buffer(int value){
+    miscValue = setBit(miscValue,CIRCULAR_BUFFER_BIT,value);
+    IOB_ILA_SET_MISCELLANEOUS(miscValue);
 }
