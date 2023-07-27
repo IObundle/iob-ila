@@ -160,6 +160,11 @@ module iob_ila #(
       .monitor_ready_o(slaves_resp[`READY(1)])
    );
 
+   // Connect remaining N_SAMPLES bits to zero
+   generate if (BUFFER_W < 16)
+      assign N_SAMPLES[15:BUFFER_W-1] = 0;
+   endgenerate
+
 endmodule
 
 
