@@ -3,6 +3,7 @@
 `include "iob_lib.vh"
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
+`include "iob_pfsm_swreg_def.vh"
 
 module ila_core #(
    parameter DATA_W    = 0,
@@ -10,7 +11,9 @@ module ila_core #(
    parameter BUFFER_W  = 0,
    parameter TRIGGER_W = 0,
    parameter CLK_COUNTER = 0, // Select if should contain an internal clock counter.
-   parameter CLK_COUNTER_W = 0 // Size of clock counter
+   parameter CLK_COUNTER_W = 0, // Size of clock counter
+   parameter MONITOR = 0, // Select if should contain an internal monitor
+   parameter MONITOR_STATE_W = 0 // Number of states for monitor PFSM
 ) (
    // Trigger and signals to sample
    input [ SIGNAL_W-1:0] signal,
@@ -39,15 +42,55 @@ module ila_core #(
    // Enabled reset and system clk
    input clk_i,
    input cke_i,
-   input arst_i
+   input arst_i,
+
+   // Monitor IOb-Native interface
+   input [1-1:0]                      monitor_avalid_i,
+   input [`IOB_PFSM_SWREG_ADDR_W-1:0] monitor_addr_i,
+   input [DATA_W-1:0]                 monitor_wdata_i,
+   input [(DATA_W/8)-1:0]             monitor_wstrb_i,
+   output [1-1:0]                     monitor_rvalid_o,
+   output [DATA_W-1:0]                monitor_rdata_o,
+   output [1-1:0]                     monitor_ready_o
 );
 
-   // Internal signal width, equals
+   // Internal trigger only has 1 bit if the Monitor is used
+   localparam I_TRIGGER_W = MONITOR>0 ? 1 : TRIGGER_W;
+   wire [I_TRIGGER_W-1:0] i_trigger;
+
+
+   // Internal signal width may include width of clock counter if it is used
    localparam I_SIGNAL_W = CLK_COUNTER>0 ? SIGNAL_W+CLK_COUNTER_W : SIGNAL_W;
    wire [I_SIGNAL_W-1:0] i_signal;
 
    //COMBINED SOFT/HARD RESET
    wire rst_int = arst_i | rst_soft;
+
+   generate
+      if (MONITOR>0) begin
+         // Create Monitor
+         iob_pfsm #(
+            .DATA_W(DATA_W),
+            .INPUT_W(TRIGGER_W),
+            .OUTPUT_W(1),
+            .STATE_W(MONITOR_STATE_W)
+         ) monitor (
+            .clk_i(sampling_clk),
+            .arst_i(arst_i),
+            .cke_i(cke_i),
+            .iob_avalid_i(monitor_avalid_i),
+            .iob_addr_i(monitor_addr_i),
+            .iob_wdata_i(monitor_wdata_i),
+            .iob_wstrb_i(monitor_wstrb_i),
+            .iob_rvalid_o(monitor_rvalid_o),
+            .iob_rdata_o(monitor_rdata_o),
+            .iob_ready_o(monitor_ready_o),
+            .input_ports(trigger), // Trigger input ports connect to monitor
+            .output_ports(i_trigger) // Monitor output is the internal trigger
+         );
+      end else
+         assign i_trigger = trigger;
+   endgenerate
 
    generate
       if (CLK_COUNTER>0) begin
@@ -72,7 +115,7 @@ module ila_core #(
 
    reg [I_SIGNAL_W-1:0] registed_signal_1;
 
-   reg [          TRIGGER_W-1:0] registed_trigger_1;
+   reg [I_TRIGGER_W-1:0] registed_trigger_1;
 
    always @(posedge clk_i, posedge arst_i) begin
       if (arst_i) begin
@@ -80,25 +123,25 @@ module ila_core #(
          registed_trigger_1 <= 0;
       end else begin
          registed_signal_1  <= i_signal;
-         registed_trigger_1 <= trigger;
+         registed_trigger_1 <= i_trigger;
       end
    end
 
-   wire rst_soft = misc_enabled[0];
-   wire diff_signal = misc_enabled[1];
-   wire circular_buffer = misc_enabled[2];
-   wire delay_trigger = misc_enabled[3];
-   wire delay_signal = misc_enabled[4];
-   wire reduce_type = misc_enabled[5];
+   wire rst_soft = misc_enabled[0]; // Software reset
+   wire diff_signal = misc_enabled[1]; // Only enable trigger on signal change
+   wire circular_buffer = misc_enabled[2]; // Enable circular (continuous) buffer
+   wire delay_trigger = misc_enabled[3]; // Delay trigger by one clock
+   wire delay_signal = misc_enabled[4]; // Delay sample signal by one clock
+   wire reduce_type = misc_enabled[5]; // Select reduction type, either 'OR' or 'AND'.
 
    // TRIGGER LOGIC
 
    // Applies trigger logic to every trigger
-   wire                                    [TRIGGER_W-1:0] trigger_out_1;
+   wire                                    [I_TRIGGER_W-1:0] trigger_out_1;
    generate
       genvar i;
 
-      for (i = 0; i < TRIGGER_W; i = i + 1) begin: gen_trigger_logic
+      for (i = 0; i < I_TRIGGER_W; i = i + 1) begin: gen_trigger_logic
          ila_trigger_logic trigger_logic (
             .trigger_in  (registed_trigger_1[i]),
             .mask        (trigger_mask[i]),
@@ -187,6 +230,10 @@ module ila_core #(
    wire write_en_2 = (trigger_enable_wr_2 & different_signal_enable_wr);
 
    wire full = ((&n_samples) == 1'b1);
+
+   // Write while not full or write always if circular buffer is used
+   wire write_en_3 = write_en_2 && (!full || circular_buffer);
+
    iob_reg_re #(
       .DATA_W (BUFFER_W),
       .RST_VAL(1'b0)
@@ -195,7 +242,7 @@ module ila_core #(
       .arst_i(arst_i),
       .rst_i(rst_int),
       .cke_i(cke_i),
-      .en_i(write_en_2 && !full),
+      .en_i(write_en_3),
       .data_i(n_samples+1'b1),
       .data_o(n_samples)
    );
@@ -212,7 +259,7 @@ module ila_core #(
       .ADDR_W(BUFFER_W)
    ) buffer (
       .w_clk_i (sampling_clk),
-      .w_en_i  (write_en_2),
+      .w_en_i  (write_en_3),
       .w_data_i(signal_data_2),
       .w_addr_i(n_samples),
       .r_clk_i (clk_i),
@@ -245,7 +292,7 @@ module ila_core #(
    always @(posedge clk_i, posedge rst_int) begin
       if (rst_int) begin
          last_written_signal <= 0;
-      end else if (write_en_2) begin
+      end else if (write_en_3) begin
          last_written_signal <= signal_data_2;
       end
    end
@@ -277,9 +324,9 @@ module ila_core #(
    assign value = value_out;
 
    // CURRENT VALUE LOGIC
-   wire [TRIGGER_W-1:0] trigger_value_reg;
+   wire [I_TRIGGER_W-1:0] trigger_value_reg;
    iob_reg_r #(
-      .DATA_W (TRIGGER_W),
+      .DATA_W (I_TRIGGER_W),
       .RST_VAL(0)
    ) trigger_value_reg_reg (
       .clk_i (sampling_clk),
@@ -291,7 +338,7 @@ module ila_core #(
    );
 
    ila_sig_clk #(
-      TRIGGER_W
+      I_TRIGGER_W
    ) trigger_sig_clk (
       .clk_i (sampling_clk),
       .arst_i(arst_i),
@@ -299,9 +346,9 @@ module ila_core #(
       .data_o(trigger_value)
    );
 
-   wire [TRIGGER_W-1:0] active_trigger_reg;
+   wire [I_TRIGGER_W-1:0] active_trigger_reg;
    iob_reg_r #(
-      .DATA_W (TRIGGER_W),
+      .DATA_W (I_TRIGGER_W),
       .RST_VAL(0)
    ) active_trigger_reg_reg (
       .clk_i (sampling_clk),
@@ -313,7 +360,7 @@ module ila_core #(
    );
 
    ila_sig_clk #(
-      TRIGGER_W
+      I_TRIGGER_W
    ) active_trigger_sig_clk (
       .clk_i (sampling_clk),
       .arst_i(arst_i),

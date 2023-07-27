@@ -110,7 +110,8 @@ void ila_set_reduce_type(int reduceType){
     IOB_ILA_SET_MISCELLANEOUS(miscValue);
 }
 
-// Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=0: Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=1: Returns the index of the last sample stored in the ila buffer
 int ila_number_samples(){
     return IOB_ILA_GET_N_SAMPLES();
 }
@@ -161,4 +162,17 @@ void ila_print_current_configuration(){
     printf("Trigger Negate: %08x\n",triggerNegate);
     printf("Trigger Mask:   %08x\n",triggerMask);
     printf("Misc Value:     %08x\n\n",miscValue);
+}
+
+// Returns Monitor base address based on ILA base address.
+// ila_init() must be called first.
+// You can use the iob-pfsm drivers to control the ILA Monitor using its base address.
+uint32_t ila_get_monitor_base_addr(int base_address){
+    return base_address | 1<<(IOB_ILA_SWREG_ADDR_W-1);
+}
+
+// Enable/Disable circular buffer
+void ila_set_circular_buffer(int value){
+    miscValue = setBit(miscValue,CIRCULAR_BUFFER_BIT,value);
+    IOB_ILA_SET_MISCELLANEOUS(miscValue);
 }

@@ -37,7 +37,8 @@ void ila_set_time_offset(int amount);
 // Set the reduce type for multiple triggers 
 void ila_set_reduce_type(int reduceType);
 
-// Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=0: Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=1: Returns the index of the last sample stored in the ila buffer
 int ila_number_samples();
 
 // Returns the value sampled
@@ -71,7 +72,14 @@ int ila_output_data_size(int number_samples, int ila_dword_size);
 // buffer: Pointer to the buffer
 // start, end: Start and end sample number, respectively.
 // ila_dword_size: Number of words per sample. Value is auto generated for each instance, in file <instance_name>.h (for example ILA0.h)
-int ila_output_data(char* buffer,int start, int end, int ila_dword_size); // Returns number of samples outputted, doesn't check buffer size (need to make sure that buffer can store everyting [see ila_output_data_size])
+// Returns number of samples outputted, doesn't check buffer size (need to make sure that buffer can store everyting [see ila_output_data_size])
+int ila_output_data(char* buffer,int start, int end, int buffer_size, int ila_dword_size);
 
 // Output everything to output (need to generate source from format file, otherwise linker error)
-void ila_output_everything(int ila_dword_size);
+void ila_output_everything(int ila_dword_size, int buffer_size);
+
+// Returns Monitor base address based on ILA base address.
+uint32_t ila_get_monitor_base_addr(int base_address);
+
+// Enable/Disable circular buffer
+void ila_set_circular_buffer(int value);

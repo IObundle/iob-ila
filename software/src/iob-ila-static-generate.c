@@ -28,13 +28,12 @@ int ila_output_data_size(int number_samples, int ila_dword_size){
     return size;
 }
 
-//TODO: Add buffer size and make function only output if enough size remaining
-int ila_output_data(char* buffer,int start, int end, int ila_dword_size){
+int ila_output_data(char* buffer,int start, int end, int buffer_size, int ila_dword_size){
     union{char i8[4];int i32;} data;
 
     buffer[0] = '\0'; // For the cases where end - start == 0
 
-    for(int i = start; i < end; i++){
+    for(int i = start; ; i=(i+1)%buffer_size){
         for(int ii = ila_dword_size - 1; ii >= 0; ii--){
             data.i32 = ila_get_large_value(i,ii);
             buffer = OutputHex(buffer,data.i8[3]);
@@ -44,19 +43,20 @@ int ila_output_data(char* buffer,int start, int end, int ila_dword_size){
         }
         
         (*buffer++) = '\n';
+
+        if(i == end) break;
     }
     *buffer = '\0';
 
-    int res = end - start;
+    int res = end<start ? end+buffer_size-start : end - start;
     return res;
 }
 
-void ila_output_everything(int ila_dword_size){
+void ila_output_everything(int ila_dword_size, int buffer_size){
     char buffer[1024]; // TODO: Make sure buffer size is big enough (can calculate at generate time)
-    int number_samples = ila_number_samples(); // Lock number of samples
 
-    for(int i = 1; i <= number_samples;){
-        i += ila_output_data(buffer,i - 1,i, ila_dword_size); 
+    for(int i = 1; i <= buffer_size;){
+        i += ila_output_data(buffer,i - 1,i, buffer_size, ila_dword_size); 
         printf("%s",buffer);
     }
 }
