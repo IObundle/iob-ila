@@ -110,7 +110,8 @@ void ila_set_reduce_type(int reduceType){
     IOB_ILA_SET_MISCELLANEOUS(miscValue);
 }
 
-// Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=0: Returns the number of samples currently stored in the ila buffer
+// If CIRCULAR_BUFFER=1: Returns the index of the last sample stored in the ila buffer
 int ila_number_samples(){
     return IOB_ILA_GET_N_SAMPLES();
 }
