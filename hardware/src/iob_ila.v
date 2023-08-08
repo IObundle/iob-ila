@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "iob_utils.vh"
+
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
 `include "iob_ila_swreg_def.vh"
@@ -66,7 +66,6 @@ module iob_ila #(
   wire [32-1:0] CURRENT_ACTIVE_TRIGGERS;
   wire DUMMY_MONITOR_REG_RANGE_wen;
   wire DUMMY_MONITOR_REG_RANGE_ready = 1'b1;
-  wire [16-1:0] VERSION;
   wire iob_ready_nxt;
   wire iob_rvalid_nxt;
 
@@ -96,7 +95,6 @@ module iob_ila #(
     .CURRENT_ACTIVE_TRIGGERS_i(CURRENT_ACTIVE_TRIGGERS),
     .DUMMY_MONITOR_REG_RANGE_wen_o(DUMMY_MONITOR_REG_RANGE_wen),
     .DUMMY_MONITOR_REG_RANGE_ready_i(DUMMY_MONITOR_REG_RANGE_ready),
-    .VERSION_i(VERSION),
     .iob_ready_nxt_o(iob_ready_nxt_o),
     .iob_rvalid_nxt_o(iob_rvalid_nxt_o),
      .iob_avalid_i(slaves_req[`AVALID(0)]),
