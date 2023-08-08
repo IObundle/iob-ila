@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "iob_utils.vh"
+
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
 `include "iob_ila_swreg_def.vh"
