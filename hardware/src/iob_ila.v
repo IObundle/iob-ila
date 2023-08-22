@@ -160,7 +160,7 @@ module iob_ila #(
 
    // Connect remaining N_SAMPLES bits to zero
    generate if (BUFFER_W < 16)
-      assign N_SAMPLES[15:BUFFER_W-1] = 0;
+      assign N_SAMPLES[15:BUFFER_W] = 0;
    endgenerate
 
 endmodule

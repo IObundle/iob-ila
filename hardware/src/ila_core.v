@@ -62,6 +62,14 @@ module ila_core #(
    localparam I_SIGNAL_W = CLK_COUNTER>0 ? SIGNAL_W+CLK_COUNTER_W : SIGNAL_W;
    wire [I_SIGNAL_W-1:0] i_signal;
 
+   wire rst_soft = misc_enabled[0]; // Software reset
+   wire diff_signal = misc_enabled[1]; // Only enable trigger on signal change
+   wire circular_buffer = misc_enabled[2]; // Enable circular (continuous) buffer
+   wire delay_trigger = misc_enabled[3]; // Delay trigger by one clock
+   wire delay_signal = misc_enabled[4]; // Delay sample signal by one clock
+   wire reduce_type = misc_enabled[5]; // Select reduction type, either 'OR' or 'AND'.
+
+
    //COMBINED SOFT/HARD RESET
    wire rst_int = arst_i | rst_soft;
 
@@ -125,13 +133,6 @@ module ila_core #(
          registed_trigger_1 <= i_trigger;
       end
    end
-
-   wire rst_soft = misc_enabled[0]; // Software reset
-   wire diff_signal = misc_enabled[1]; // Only enable trigger on signal change
-   wire circular_buffer = misc_enabled[2]; // Enable circular (continuous) buffer
-   wire delay_trigger = misc_enabled[3]; // Delay trigger by one clock
-   wire delay_signal = misc_enabled[4]; // Delay sample signal by one clock
-   wire reduce_type = misc_enabled[5]; // Select reduction type, either 'OR' or 'AND'.
 
    // TRIGGER LOGIC
 
