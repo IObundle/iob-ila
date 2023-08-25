@@ -242,6 +242,14 @@ class iob_ila(iob_module):
                     "max": "10",
                     "descr": "Number of Monitor PFSM states (log2).",
                 },
+                {
+                    "name": "DMA_TDATA_W",
+                    "type": "P",
+                    "val": "32",
+                    "min": "NA",
+                    "max": "DATA_W",
+                    "descr": "Width of DMA tdata interface (can be up to DATA_W)",
+                },
             ]
         )
 
@@ -294,6 +302,30 @@ class iob_ila(iob_module):
                         "type": "I",
                         "n_bits": "1",
                         "descr": "",
+                    },
+                ],
+            },
+            {
+                "name": "dma",
+                "descr": "Direct Memory Access via dedicated AXI Stream interface.",
+                "ports": [
+                    {
+                        "name": "tdata_o",
+                        "type": "O",
+                        "n_bits": "DMA_TDATA_W",
+                        "descr": "TData output interface",
+                    },
+                    {
+                        "name": "tvalid_o",
+                        "type": "O",
+                        "n_bits": "1",
+                        "descr": "TValid output interface",
+                    },
+                    {
+                        "name": "tready_i",
+                        "type": "I",
+                        "n_bits": "1",
+                        "descr": "TReady input interface",
                     },
                 ],
             },
