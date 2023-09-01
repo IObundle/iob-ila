@@ -369,7 +369,8 @@ module ila_core #(
    );
 
     //Create a wire that is multiple of DATA_W
-   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned = registed_signal_1;
+   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned;
+   assign registed_signal_aligned[I_SIGNAL_W-1:0] = registed_signal_1;
    // Connect extra bits to ground
    generate if (DATA_W%I_SIGNAL_W != 0)
       assign registed_signal_aligned [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:I_SIGNAL_W] = 'b0;
