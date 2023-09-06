@@ -3,6 +3,7 @@
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
 `include "iob_pfsm_swreg_def.vh"
+`include "iob_ila_swreg_def.vh"
 
 module ila_core #(
    parameter DATA_W    = 0,
@@ -28,7 +29,8 @@ module ila_core #(
    input [32-1:0] misc_enabled,
 
    // Software side access to values sampled
-   input  [                                BUFFER_W-1:0] index,
+   input                                                 INDEX_wen,
+   input  [                          `IOB_ILA_INDEX_W:0] INDEX_wdata,
    output [                                BUFFER_W-1:0] samples,
    output [                                  DATA_W-1:0] value,
    input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select,
@@ -50,7 +52,12 @@ module ila_core #(
    input [(DATA_W/8)-1:0]             monitor_wstrb_i,
    output [1-1:0]                     monitor_rvalid_o,
    output [DATA_W-1:0]                monitor_rdata_o,
-   output [1-1:0]                     monitor_ready_o
+   output [1-1:0]                     monitor_ready_o,
+
+      // DMA interface
+   output [DMA_TDATA_W:0] dma_tdata_o,
+   output                 dma_tvalid_o,
+   input                  dma_tready_i
 );
 
    // Internal trigger only has 1 bit if the Monitor is used
@@ -247,6 +254,27 @@ module ila_core #(
       .data_o(n_samples)
    );
 
+   // INDEX register logic
+   wire [`IOB_ILA_INDEX_W-1:0] index_reg_o;
+   // Enable write enalbe when new value written via SWreg, or when DMA is
+   // ready for values
+   wire [`IOB_ILA_INDEX_W-1:0] index_reg_wen = INDEX_wen | dma_tready_i;
+   // Next index is either the one given by SWreg or the next value to send
+   // from DMA.
+   wire [`IOB_ILA_INDEX_W-1:0] index_reg_i = INDEX_wen ? INDEX_wdata : index_reg_o+1;
+   iob_reg_e #(
+     .DATA_W(`IOB_ILA_INDEX_W),
+     .RST_VAL({`IOB_ILA_INDEX_W{1'b0}}),
+     .CLKEDGE("posedge")
+   ) INDEX_datareg (
+     .clk_i  (clk_i),
+     .cke_i  (cke_i),
+     .arst_i (arst_i),
+     .en_i   (index_reg_wen),
+     .data_i (index_reg_i),
+     .data_o (index_reg_o)
+   );
+
    // Memory instance
    wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] data_out; //Create a wire that is multiple of DATA_W
    // Connect extra bits to ground
@@ -263,7 +291,7 @@ module ila_core #(
       .w_data_i(signal_data_2),
       .w_addr_i(n_samples),
       .r_clk_i (clk_i),
-      .r_addr_i(index),
+      .r_addr_i(index_reg_o),
       .r_en_i  (1'b1),
       .r_data_o(data_out[I_SIGNAL_W-1:0])
    );
@@ -322,6 +350,25 @@ module ila_core #(
    end
 
    assign value = value_out;
+
+   // Assign DMA tdata_o and tvalid_o
+   assign dma_tdata_o = value_out;
+
+   //Next is valid if: 
+   //    is valid now and receiver is not ready
+   //    or
+   //    fifo is not empty, receiver is ready
+   iob_reg_r #(
+      .DATA_W (1),
+      .RST_VAL(0)
+   ) tvalid_int_reg (
+      .clk_i(clk_i),
+      .arst_i(arst_i),
+      .cke_i(cke_i),
+      .rst_i(SOFT_RESET),
+      .data_i ((dma_tvalid_o & ~dma_tready_i) | (~EMPTY & dma_tready_i)),
+      .data_o(dma_tvalid_o)
+   );
 
    // CURRENT VALUE LOGIC
    wire [I_TRIGGER_W-1:0] trigger_value_reg;

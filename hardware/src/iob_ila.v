@@ -57,7 +57,6 @@ module iob_ila #(
   wire [32-1:0] TRIGGER_TYPE;
   wire [32-1:0] TRIGGER_NEGATE;
   wire [32-1:0] TRIGGER_MASK;
-  wire [16-1:0] INDEX;
   wire [8-1:0] SIGNAL_SELECT;
   wire [32-1:0] SAMPLE_DATA;
   wire [16-1:0] N_SAMPLES;
@@ -86,7 +85,6 @@ module iob_ila #(
     .TRIGGER_TYPE_o(TRIGGER_TYPE),
     .TRIGGER_NEGATE_o(TRIGGER_NEGATE),
     .TRIGGER_MASK_o(TRIGGER_MASK),
-    .INDEX_o(INDEX),
     .SIGNAL_SELECT_o(SIGNAL_SELECT),
     .SAMPLE_DATA_i(SAMPLE_DATA),
     .N_SAMPLES_i(N_SAMPLES),
@@ -134,7 +132,8 @@ module iob_ila #(
       .misc_enabled(MISCELLANEOUS),
 
       // Software side access to values sampled
-      .index       (INDEX[0+:BUFFER_W]),
+      .INDEX_wen(INDEX_wen),
+      .INDEX_wdata(INDEX_wdata),
       .samples     (N_SAMPLES[0+:BUFFER_W]),
       .value       (SAMPLE_DATA),
       .value_select(SIGNAL_SELECT[0+:`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)]),
@@ -155,7 +154,12 @@ module iob_ila #(
       .monitor_wstrb_i(slaves_req[`WSTRB(1)]),
       .monitor_rvalid_o(slaves_resp[`RVALID(1)]),
       .monitor_rdata_o(slaves_resp[`RDATA(1)]),
-      .monitor_ready_o(slaves_resp[`READY(1)])
+      .monitor_ready_o(slaves_resp[`READY(1)]),
+
+      // DMA interface
+      .dma_tdata_o(tdata_o),
+      .dma_tvalid_o(tvalid_o),
+      .dma_tready_i(tready_i)
    );
 
    // Connect remaining N_SAMPLES bits to zero

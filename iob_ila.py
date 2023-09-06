@@ -397,7 +397,7 @@ class iob_ila(iob_module):
                         "rst_val": 0,
                         "addr": -1,
                         "log2n_items": 0,
-                        "autologic": True,
+                        "autologic": False,
                         "descr": "Since it is a debug core and performance is not a priority, samples are accessed by first setting the index to read and then reading the value of SAMPLE_DATA",
                     },
                     {

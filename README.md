@@ -7,6 +7,7 @@ written in Verilog and includes a C software driver. It allows the sampling
 of any signal from the system and provides an interface that allows a RISC-V
 processor to access the sampled values.
 It optionally contains an internal Monitor, based on the [IOb-PFSM core](https://github.com/IObundle/iob-pfsm).
+It also provides a [Direct Memory Access (DMA)](#direct-memory-access-(dma)) interface using an AXI4-Stream interface.
 
 ## Integrate in SoC ##
 
@@ -163,6 +164,14 @@ class iob_soc_tester(iob_soc):
           ),
       ]
 ```
+
+## Direct Memory Access (DMA)
+
+This peripheral provides a DMA interface using AXI4-Stream.
+
+* Check out [IOb-DMA](https://github.com/IObundle/iob-dma) for more details.
+
+The `iob_soc_tester.py` script of the [IOb-SoC-SUT](https://github.com/IObundle/iob-soc-sut) system, provides examples of an ILA peripheral configured to use the DMA interface.
 
 ## Brief description of C interface ##
 
