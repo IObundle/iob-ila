@@ -407,7 +407,7 @@ class iob_ila(iob_module):
                         "rst_val": 0,
                         "addr": -1,
                         "log2n_items": 0,
-                        "autologic": True,
+                        "autologic": False,
                         "descr": "Signals bigger than DATA_W bits are partition into DATA_W parts, this selects which part to read",
                     },
                 ],

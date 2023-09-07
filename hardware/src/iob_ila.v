@@ -57,7 +57,6 @@ module iob_ila #(
   wire [32-1:0] TRIGGER_TYPE;
   wire [32-1:0] TRIGGER_NEGATE;
   wire [32-1:0] TRIGGER_MASK;
-  wire [8-1:0] SIGNAL_SELECT;
   wire [32-1:0] SAMPLE_DATA;
   wire [16-1:0] N_SAMPLES;
   wire [32-1:0] CURRENT_DATA;
@@ -65,6 +64,10 @@ module iob_ila #(
   wire [32-1:0] CURRENT_ACTIVE_TRIGGERS;
   wire DUMMY_MONITOR_REG_RANGE_wen;
   wire DUMMY_MONITOR_REG_RANGE_ready = 1'b1;
+  wire INDEX_wen;
+  wire INDEX_ready = 1'b1;
+  wire SIGNAL_SELECT_wen;
+  wire SIGNAL_SELECT_ready = 1'b1;
   wire iob_ready_nxt;
   wire iob_rvalid_nxt;
 
@@ -85,7 +88,6 @@ module iob_ila #(
     .TRIGGER_TYPE_o(TRIGGER_TYPE),
     .TRIGGER_NEGATE_o(TRIGGER_NEGATE),
     .TRIGGER_MASK_o(TRIGGER_MASK),
-    .SIGNAL_SELECT_o(SIGNAL_SELECT),
     .SAMPLE_DATA_i(SAMPLE_DATA),
     .N_SAMPLES_i(N_SAMPLES),
     .CURRENT_DATA_i(CURRENT_DATA),
@@ -93,6 +95,10 @@ module iob_ila #(
     .CURRENT_ACTIVE_TRIGGERS_i(CURRENT_ACTIVE_TRIGGERS),
     .DUMMY_MONITOR_REG_RANGE_wen_o(DUMMY_MONITOR_REG_RANGE_wen),
     .DUMMY_MONITOR_REG_RANGE_ready_i(DUMMY_MONITOR_REG_RANGE_ready),
+    .INDEX_wen_o(INDEX_wen),
+    .INDEX_ready_i(INDEX_ready),
+    .SIGNAL_SELECT_wen_o(SIGNAL_SELECT_wen),
+    .SIGNAL_SELECT_ready_i(SIGNAL_SELECT_ready),
     .iob_ready_nxt_o(iob_ready_nxt_o),
     .iob_rvalid_nxt_o(iob_rvalid_nxt_o),
      .iob_avalid_i(slaves_req[`AVALID(0)]),
@@ -116,7 +122,8 @@ module iob_ila #(
       .CLK_COUNTER  (CLK_COUNTER),
       .CLK_COUNTER_W(CLK_COUNTER_W),
       .MONITOR      (MONITOR),
-      .MONITOR_STATE_W(MONITOR_STATE_W)
+      .MONITOR_STATE_W(MONITOR_STATE_W),
+      .DMA_TDATA_W  (DMA_TDATA_W)
    ) ila_core0 (
       // Trigger and signals to sample
       .signal      (signal),
@@ -133,10 +140,11 @@ module iob_ila #(
 
       // Software side access to values sampled
       .INDEX_wen(INDEX_wen),
-      .INDEX_wdata(INDEX_wdata),
+      .INDEX_wdata(iob_wdata_i[`IOB_ILA_INDEX_W-1:0]),
       .samples     (N_SAMPLES[0+:BUFFER_W]),
       .value       (SAMPLE_DATA),
-      .value_select(SIGNAL_SELECT[0+:`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)]),
+      .value_select_wen(SIGNAL_SELECT_wen),
+      .value_select_wdata(iob_wdata_i[0+:`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)]),
 
       .current_value  (CURRENT_DATA),
       .trigger_value  (CURRENT_TRIGGERS[0+:TRIGGER_W]),

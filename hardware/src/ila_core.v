@@ -13,7 +13,8 @@ module ila_core #(
    parameter CLK_COUNTER = 0, // Select if should contain an internal clock counter.
    parameter CLK_COUNTER_W = 0, // Size of clock counter
    parameter MONITOR = 0, // Select if should contain an internal monitor
-   parameter MONITOR_STATE_W = 0 // Number of states for monitor PFSM
+   parameter MONITOR_STATE_W = 0, // Number of states for monitor PFSM
+   parameter DMA_TDATA_W = 0
 ) (
    // Trigger and signals to sample
    input [ SIGNAL_W-1:0] signal,
@@ -30,10 +31,11 @@ module ila_core #(
 
    // Software side access to values sampled
    input                                                 INDEX_wen,
-   input  [                          `IOB_ILA_INDEX_W:0] INDEX_wdata,
+   input  [                        `IOB_ILA_INDEX_W-1:0] INDEX_wdata,
    output [                                BUFFER_W-1:0] samples,
    output [                                  DATA_W-1:0] value,
-   input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select,
+   input                                                 value_select_wen,
+   input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select_wdata,
 
    // Software side access to current values
    output [   DATA_W-1:0] current_value,
@@ -254,11 +256,16 @@ module ila_core #(
       .data_o(n_samples)
    );
 
+   // Register Logic
+
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] next_value_select = value_select + 1'b1;
+   wire advance_index = (dma_tready_i && next_value_select==1'b0);
+
    // INDEX register logic
    wire [`IOB_ILA_INDEX_W-1:0] index_reg_o;
-   // Enable write enalbe when new value written via SWreg, or when DMA is
-   // ready for values
-   wire [`IOB_ILA_INDEX_W-1:0] index_reg_wen = INDEX_wen | dma_tready_i;
+   // Enable write enalbe when new value written via SWreg, or (when DMA is
+   // ready for values and part select has reached zero)
+   wire index_reg_wen = INDEX_wen | advance_index;
    // Next index is either the one given by SWreg or the next value to send
    // from DMA.
    wire [`IOB_ILA_INDEX_W-1:0] index_reg_i = INDEX_wen ? INDEX_wdata : index_reg_o+1;
@@ -273,6 +280,27 @@ module ila_core #(
      .en_i   (index_reg_wen),
      .data_i (index_reg_i),
      .data_o (index_reg_o)
+   );
+
+   // VALUE_SELECT register logic
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select;
+   // Enable write enalbe when new value written via SWreg, or when DMA is
+   // ready for values
+   wire value_select_reg_wen = value_select_wen | (dma_tready_i && data_out_valid);
+   // Next part select is either the one given by SWreg or the next value to send
+   // from DMA.
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select_reg_i = value_select_wen ? value_select_wdata : next_value_select;
+   iob_reg_e #(
+     .DATA_W(`IOB_ILA_SIGNAL_SELECT_W),
+     .RST_VAL({`IOB_ILA_SIGNAL_SELECT_W{1'b0}}),
+     .CLKEDGE("posedge")
+   ) SIGNAL_SELECT_datareg (
+     .clk_i  (clk_i),
+     .cke_i  (cke_i),
+     .arst_i (arst_i),
+     .en_i   (value_select_reg_wen),
+     .data_i (value_select_reg_i),
+     .data_o (value_select)
    );
 
    // Memory instance
@@ -349,6 +377,22 @@ module ila_core #(
       end
    end
 
+   // Track validity of value_out
+   reg index_out_valid;
+   reg data_out_valid;
+   always @(posedge clk_i, posedge arst_i)
+      if (arst_i) begin
+         index_out_valid <= 0;
+         data_out_valid <= 0;
+      end else if (advance_index) begin
+         index_out_valid <= index_out_valid | index_reg_wen;
+         data_out_valid <= 0;
+      end else begin
+         index_out_valid <= index_out_valid | index_reg_wen;
+         data_out_valid <= index_out_valid;
+      end
+
+
    assign value = value_out;
 
    // Assign DMA tdata_o and tvalid_o
@@ -357,7 +401,7 @@ module ila_core #(
    //Next is valid if: 
    //    is valid now and receiver is not ready
    //    or
-   //    fifo is not empty, receiver is ready
+   //    output value is valid and receiver is ready
    iob_reg_r #(
       .DATA_W (1),
       .RST_VAL(0)
@@ -366,7 +410,7 @@ module ila_core #(
       .arst_i(arst_i),
       .cke_i(cke_i),
       .rst_i(SOFT_RESET),
-      .data_i ((dma_tvalid_o & ~dma_tready_i) | (~EMPTY & dma_tready_i)),
+      .data_i ((dma_tvalid_o & ~dma_tready_i) | (data_out_valid & dma_tready_i)),
       .data_o(dma_tvalid_o)
    );
 
