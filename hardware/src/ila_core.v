@@ -258,7 +258,7 @@ module ila_core #(
 
    // Register Logic
 
-   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] next_value_select = value_select + 1'b1;
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] next_value_select = (value_select==`CEIL_DIV(I_SIGNAL_W, DATA_W)-1) ? 1'b0 : value_select + 1'b1;
    wire advance_index = (dma_tready_i && next_value_select==1'b0);
 
    // INDEX register logic
@@ -360,7 +360,9 @@ module ila_core #(
    always @(posedge clk_i, posedge arst_i) begin
       if (arst_i) begin
          value_out <= 0;
-      end else begin
+      end else if (~dma_tready_i)
+         value_out <= value_out;
+      else begin
          if (DATA_W >= I_SIGNAL_W) value_out <= data_out;
          else begin
             for (
