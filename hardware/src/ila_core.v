@@ -57,9 +57,9 @@ module ila_core #(
    output [1-1:0]                     monitor_ready_o,
 
       // DMA interface
-   output [DMA_TDATA_W:0] dma_tdata_o,
-   output                 dma_tvalid_o,
-   input                  dma_tready_i
+   output reg [DMA_TDATA_W:0] dma_tdata_o,
+   output                     dma_tvalid_o,
+   input                      dma_tready_i
 );
 
    // Internal trigger only has 1 bit if the Monitor is used
@@ -360,11 +360,12 @@ module ila_core #(
    always @(posedge clk_i, posedge arst_i) begin
       if (arst_i) begin
          value_out <= 0;
-      end else if (~dma_tready_i)
-         value_out <= value_out;
-      else begin
-         if (DATA_W >= I_SIGNAL_W) value_out <= data_out;
-         else begin
+         dma_tdata_o <= 0;
+      end else begin
+         if (DATA_W >= I_SIGNAL_W) begin
+            value_out <= data_out;
+            dma_tdata_o <= data_out;
+         end else begin
             for (
                 ii = 0;
                 ii <
@@ -373,9 +374,13 @@ module ila_core #(
             ) begin
                if (value_select == ii) begin
                   value_out <= data_out[DATA_W*ii+:DATA_W];
+                  dma_tdata_o <= data_out[DATA_W*ii+:DATA_W];
                end
             end
          end
+         // Don't update dma_tdata_o until receiver is ready
+         if (~dma_tready_i)
+            dma_tdata_o <= dma_tdata_o;
       end
    end
 
@@ -396,9 +401,6 @@ module ila_core #(
 
 
    assign value = value_out;
-
-   // Assign DMA tdata_o and tvalid_o
-   assign dma_tdata_o = value_out;
 
    //Next is valid if: 
    //    is valid now and receiver is not ready
