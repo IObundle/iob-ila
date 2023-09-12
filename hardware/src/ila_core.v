@@ -57,9 +57,9 @@ module ila_core #(
    output [1-1:0]                     monitor_ready_o,
 
       // DMA interface
-   output reg [DMA_TDATA_W:0] dma_tdata_o,
-   output                     dma_tvalid_o,
-   input                      dma_tready_i
+   output reg [DMA_TDATA_W-1:0] dma_tdata_o,
+   output                       dma_tvalid_o,
+   input                        dma_tready_i
 );
 
    // Internal trigger only has 1 bit if the Monitor is used
@@ -258,6 +258,7 @@ module ila_core #(
 
    // Register Logic
 
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select;
    wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] next_value_select = (value_select==`CEIL_DIV(I_SIGNAL_W, DATA_W)-1) ? 1'b0 : value_select + 1'b1;
    wire advance_index = (dma_tready_i && next_value_select==1'b0);
 
@@ -282,8 +283,9 @@ module ila_core #(
      .data_o (index_reg_o)
    );
 
+
    // VALUE_SELECT register logic
-   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select;
+   reg data_out_valid;
    // Enable write enalbe when new value written via SWreg, or when DMA is
    // ready for values
    wire value_select_reg_wen = value_select_wen | (dma_tready_i && data_out_valid);
@@ -319,7 +321,7 @@ module ila_core #(
       .w_data_i(signal_data_2),
       .w_addr_i(n_samples),
       .r_clk_i (clk_i),
-      .r_addr_i(index_reg_o),
+      .r_addr_i(index_reg_o[BUFFER_W-1:0]),
       .r_en_i  (1'b1),
       .r_data_o(data_out[I_SIGNAL_W-1:0])
    );
@@ -386,7 +388,6 @@ module ila_core #(
 
    // Track validity of value_out
    reg index_out_valid;
-   reg data_out_valid;
    always @(posedge clk_i, posedge arst_i)
       if (arst_i) begin
          index_out_valid <= 0;
