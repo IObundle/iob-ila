@@ -176,3 +176,9 @@ void ila_set_circular_buffer(int value){
     miscValue = setBit(miscValue,CIRCULAR_BUFFER_BIT,value);
     IOB_ILA_SET_MISCELLANEOUS(miscValue);
 }
+
+// Set index and partSelect for start of reading by DMA
+void ila_set_cursor(int index,int partSelect){
+    IOB_ILA_SET_SIGNAL_SELECT(partSelect);
+    IOB_ILA_SET_INDEX(index);
+}

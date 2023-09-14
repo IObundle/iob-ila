@@ -242,6 +242,14 @@ class iob_ila(iob_module):
                     "max": "10",
                     "descr": "Number of Monitor PFSM states (log2).",
                 },
+                {
+                    "name": "DMA_TDATA_W",
+                    "type": "P",
+                    "val": "32",
+                    "min": "NA",
+                    "max": "DATA_W",
+                    "descr": "Width of DMA tdata interface (can be up to DATA_W)",
+                },
             ]
         )
 
@@ -294,6 +302,30 @@ class iob_ila(iob_module):
                         "type": "I",
                         "n_bits": "1",
                         "descr": "",
+                    },
+                ],
+            },
+            {
+                "name": "dma",
+                "descr": "Direct Memory Access via dedicated AXI Stream interface.",
+                "ports": [
+                    {
+                        "name": "tdata_o",
+                        "type": "O",
+                        "n_bits": "DMA_TDATA_W",
+                        "descr": "TData output interface",
+                    },
+                    {
+                        "name": "tvalid_o",
+                        "type": "O",
+                        "n_bits": "1",
+                        "descr": "TValid output interface",
+                    },
+                    {
+                        "name": "tready_i",
+                        "type": "I",
+                        "n_bits": "1",
+                        "descr": "TReady input interface",
                     },
                 ],
             },
@@ -365,7 +397,7 @@ class iob_ila(iob_module):
                         "rst_val": 0,
                         "addr": -1,
                         "log2n_items": 0,
-                        "autologic": True,
+                        "autologic": False,
                         "descr": "Since it is a debug core and performance is not a priority, samples are accessed by first setting the index to read and then reading the value of SAMPLE_DATA",
                     },
                     {
@@ -375,7 +407,7 @@ class iob_ila(iob_module):
                         "rst_val": 0,
                         "addr": -1,
                         "log2n_items": 0,
-                        "autologic": True,
+                        "autologic": False,
                         "descr": "Signals bigger than DATA_W bits are partition into DATA_W parts, this selects which part to read",
                     },
                 ],

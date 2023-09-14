@@ -3,6 +3,7 @@
 `include "iob_ila_conf.vh"
 `include "iob_ila_lib.vh"
 `include "iob_pfsm_swreg_def.vh"
+`include "iob_ila_swreg_def.vh"
 
 module ila_core #(
    parameter DATA_W    = 0,
@@ -12,7 +13,8 @@ module ila_core #(
    parameter CLK_COUNTER = 0, // Select if should contain an internal clock counter.
    parameter CLK_COUNTER_W = 0, // Size of clock counter
    parameter MONITOR = 0, // Select if should contain an internal monitor
-   parameter MONITOR_STATE_W = 0 // Number of states for monitor PFSM
+   parameter MONITOR_STATE_W = 0, // Number of states for monitor PFSM
+   parameter DMA_TDATA_W = 0
 ) (
    // Trigger and signals to sample
    input [ SIGNAL_W-1:0] signal,
@@ -28,10 +30,12 @@ module ila_core #(
    input [32-1:0] misc_enabled,
 
    // Software side access to values sampled
-   input  [                                BUFFER_W-1:0] index,
+   input                                                 INDEX_wen,
+   input  [                        `IOB_ILA_INDEX_W-1:0] INDEX_wdata,
    output [                                BUFFER_W-1:0] samples,
    output [                                  DATA_W-1:0] value,
-   input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select,
+   input                                                 value_select_wen,
+   input  [`CALCULATE_SIGNAL_SEL_W(DATA_W,SIGNAL_W)-1:0] value_select_wdata,
 
    // Software side access to current values
    output [   DATA_W-1:0] current_value,
@@ -50,7 +54,12 @@ module ila_core #(
    input [(DATA_W/8)-1:0]             monitor_wstrb_i,
    output [1-1:0]                     monitor_rvalid_o,
    output [DATA_W-1:0]                monitor_rdata_o,
-   output [1-1:0]                     monitor_ready_o
+   output [1-1:0]                     monitor_ready_o,
+
+      // DMA interface
+   output reg [DMA_TDATA_W-1:0] dma_tdata_o,
+   output                       dma_tvalid_o,
+   input                        dma_tready_i
 );
 
    // Internal trigger only has 1 bit if the Monitor is used
@@ -61,6 +70,14 @@ module ila_core #(
    // Internal signal width may include width of clock counter if it is used
    localparam I_SIGNAL_W = CLK_COUNTER>0 ? SIGNAL_W+CLK_COUNTER_W : SIGNAL_W;
    wire [I_SIGNAL_W-1:0] i_signal;
+
+   wire rst_soft = misc_enabled[0]; // Software reset
+   wire diff_signal = misc_enabled[1]; // Only enable trigger on signal change
+   wire circular_buffer = misc_enabled[2]; // Enable circular (continuous) buffer
+   wire delay_trigger = misc_enabled[3]; // Delay trigger by one clock
+   wire delay_signal = misc_enabled[4]; // Delay sample signal by one clock
+   wire reduce_type = misc_enabled[5]; // Select reduction type, either 'OR' or 'AND'.
+
 
    //COMBINED SOFT/HARD RESET
    wire rst_int = arst_i | rst_soft;
@@ -125,13 +142,6 @@ module ila_core #(
          registed_trigger_1 <= i_trigger;
       end
    end
-
-   wire rst_soft = misc_enabled[0]; // Software reset
-   wire diff_signal = misc_enabled[1]; // Only enable trigger on signal change
-   wire circular_buffer = misc_enabled[2]; // Enable circular (continuous) buffer
-   wire delay_trigger = misc_enabled[3]; // Delay trigger by one clock
-   wire delay_signal = misc_enabled[4]; // Delay sample signal by one clock
-   wire reduce_type = misc_enabled[5]; // Select reduction type, either 'OR' or 'AND'.
 
    // TRIGGER LOGIC
 
@@ -246,6 +256,55 @@ module ila_core #(
       .data_o(n_samples)
    );
 
+   // Register Logic
+
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select;
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] next_value_select = (value_select==`CEIL_DIV(I_SIGNAL_W, DATA_W)-1) ? 1'b0 : value_select + 1'b1;
+   wire advance_index = (dma_tready_i && next_value_select==1'b0);
+
+   // INDEX register logic
+   wire [`IOB_ILA_INDEX_W-1:0] index_reg_o;
+   // Enable write enalbe when new value written via SWreg, or (when DMA is
+   // ready for values and part select has reached zero)
+   wire index_reg_wen = INDEX_wen | advance_index;
+   // Next index is either the one given by SWreg or the next value to send
+   // from DMA.
+   wire [`IOB_ILA_INDEX_W-1:0] index_reg_i = INDEX_wen ? INDEX_wdata : index_reg_o+1;
+   iob_reg_e #(
+     .DATA_W(`IOB_ILA_INDEX_W),
+     .RST_VAL({`IOB_ILA_INDEX_W{1'b0}}),
+     .CLKEDGE("posedge")
+   ) INDEX_datareg (
+     .clk_i  (clk_i),
+     .cke_i  (cke_i),
+     .arst_i (arst_i),
+     .en_i   (index_reg_wen),
+     .data_i (index_reg_i),
+     .data_o (index_reg_o)
+   );
+
+
+   // VALUE_SELECT register logic
+   reg data_out_valid;
+   // Enable write enalbe when new value written via SWreg, or when DMA is
+   // ready for values
+   wire value_select_reg_wen = value_select_wen | (dma_tready_i && data_out_valid);
+   // Next part select is either the one given by SWreg or the next value to send
+   // from DMA.
+   wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select_reg_i = value_select_wen ? value_select_wdata : next_value_select;
+   iob_reg_e #(
+     .DATA_W(`IOB_ILA_SIGNAL_SELECT_W),
+     .RST_VAL({`IOB_ILA_SIGNAL_SELECT_W{1'b0}}),
+     .CLKEDGE("posedge")
+   ) SIGNAL_SELECT_datareg (
+     .clk_i  (clk_i),
+     .cke_i  (cke_i),
+     .arst_i (arst_i),
+     .en_i   (value_select_reg_wen),
+     .data_i (value_select_reg_i),
+     .data_o (value_select)
+   );
+
    // Memory instance
    wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] data_out; //Create a wire that is multiple of DATA_W
    // Connect extra bits to ground
@@ -262,7 +321,7 @@ module ila_core #(
       .w_data_i(signal_data_2),
       .w_addr_i(n_samples),
       .r_clk_i (clk_i),
-      .r_addr_i(index),
+      .r_addr_i(index_reg_o[BUFFER_W-1:0]),
       .r_en_i  (1'b1),
       .r_data_o(data_out[I_SIGNAL_W-1:0])
    );
@@ -303,9 +362,12 @@ module ila_core #(
    always @(posedge clk_i, posedge arst_i) begin
       if (arst_i) begin
          value_out <= 0;
+         dma_tdata_o <= 0;
       end else begin
-         if (DATA_W >= I_SIGNAL_W) value_out <= data_out;
-         else begin
+         if (DATA_W >= I_SIGNAL_W) begin
+            value_out <= data_out;
+            dma_tdata_o <= data_out;
+         end else begin
             for (
                 ii = 0;
                 ii <
@@ -314,13 +376,48 @@ module ila_core #(
             ) begin
                if (value_select == ii) begin
                   value_out <= data_out[DATA_W*ii+:DATA_W];
+                  dma_tdata_o <= data_out[DATA_W*ii+:DATA_W];
                end
             end
          end
+         // Don't update dma_tdata_o until receiver is ready
+         if (~dma_tready_i)
+            dma_tdata_o <= dma_tdata_o;
       end
    end
 
+   // Track validity of value_out
+   reg index_out_valid;
+   always @(posedge clk_i, posedge arst_i)
+      if (arst_i) begin
+         index_out_valid <= 0;
+         data_out_valid <= 0;
+      end else if (advance_index) begin
+         index_out_valid <= index_out_valid | index_reg_wen;
+         data_out_valid <= 0;
+      end else begin
+         index_out_valid <= index_out_valid | index_reg_wen;
+         data_out_valid <= index_out_valid;
+      end
+
+
    assign value = value_out;
+
+   //Next is valid if: 
+   //    is valid now and receiver is not ready
+   //    or
+   //    output value is valid and receiver is ready
+   iob_reg_r #(
+      .DATA_W (1),
+      .RST_VAL(0)
+   ) tvalid_int_reg (
+      .clk_i(clk_i),
+      .arst_i(arst_i),
+      .cke_i(cke_i),
+      .rst_i(SOFT_RESET),
+      .data_i ((dma_tvalid_o & ~dma_tready_i) | (data_out_valid & dma_tready_i)),
+      .data_o(dma_tvalid_o)
+   );
 
    // CURRENT VALUE LOGIC
    wire [I_TRIGGER_W-1:0] trigger_value_reg;
@@ -368,7 +465,8 @@ module ila_core #(
    );
 
     //Create a wire that is multiple of DATA_W
-   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned = registed_signal_1;
+   wire [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:0] registed_signal_aligned;
+   assign registed_signal_aligned[I_SIGNAL_W-1:0] = registed_signal_1;
    // Connect extra bits to ground
    generate if (DATA_W%I_SIGNAL_W != 0)
       assign registed_signal_aligned [`CEIL_DIV(I_SIGNAL_W,DATA_W)*DATA_W-1:I_SIGNAL_W] = 'b0;

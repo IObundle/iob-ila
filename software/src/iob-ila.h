@@ -83,3 +83,6 @@ uint32_t ila_get_monitor_base_addr(int base_address);
 
 // Enable/Disable circular buffer
 void ila_set_circular_buffer(int value);
+
+// Set index and partSelect for start of reading by DMA
+void ila_set_cursor(int index,int partSelect);
