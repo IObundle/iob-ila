@@ -9,6 +9,8 @@ processor to access the sampled values.
 It optionally contains an internal Monitor, based on the [IOb-PFSM core](https://github.com/IObundle/iob-pfsm).
 It also provides a [Direct Memory Access (DMA)](#direct-memory-access-(dma)) interface using an AXI4-Stream interface.
 
+This peripheral can be used as a verification tool of the [OpenCryptoTester](https://nlnet.nl/project/OpenCryptoTester#ack) project.
+
 ## Integrate in SoC ##
 
 * Check out [IOb-SoC-SUT](https://github.com/IObundle/iob-soc-sut)
@@ -213,3 +215,16 @@ uint32_t MONITOR_BASE = ila_get_monitor_base_addr(int base_address);
 // Since the internal Monitor is an IOb-PFSM core, then their driver functions are the same.
 // Check out the IOb-PFSM repository for more information on the Monitor drivers: https://github.com/IObundle/iob-pfsm
 ```
+
+# Acknowledgement
+The [OpenCryptoTester](https://nlnet.nl/project/OpenCryptoTester#ack) project is funded through the NGI Assure Fund, a fund established by NLnet
+with financial support from the European Commission's Next Generation Internet
+programme, under the aegis of DG Communications Networks, Content and Technology
+under grant agreement No 957073.
+
+<table>
+    <tr>
+        <td align="center" width="50%"><img src="https://nlnet.nl/logo/banner.svg" alt="NLnet foundation logo" style="width:90%"></td>
+        <td align="center"><img src="https://nlnet.nl/image/logos/NGIAssure_tag.svg" alt="NGI Assure logo" style="width:90%"></td>
+    </tr>
+</table>
