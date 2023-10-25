@@ -8,10 +8,8 @@ import iob_colors
 from ilaGenerateVerilog import generate_verilog_source
 from ilaGenerateSource import generate_driver_source
 from ilaBase import get_format_data
-import build_srcs
 
 # Submodules
-from iob_lib import iob_lib
 from iob_utils import iob_utils
 from iob_reg_r import iob_reg_r
 from iob_reg_re import iob_reg_re
@@ -33,7 +31,6 @@ class iob_ila(iob_module):
             # Hardware headers & modules
             {"interface": "iob_s_port"},
             {"interface": "iob_s_portmap"},
-            iob_lib,
             iob_utils,
             {"interface": "clk_en_rst_s_s_portmap"},
             {"interface": "clk_en_rst_s_port"},
@@ -343,7 +340,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Set of bits to enable different features. Includes softreset and others",
@@ -359,7 +355,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Single or continuous",
@@ -369,7 +364,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Software negate the trigger value",
@@ -379,7 +373,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Bitmask used to enable or disable individual triggers (1 enables the trigger, 0 disables)",
@@ -395,7 +388,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 16,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": False,
                         "descr": "Since it is a debug core and performance is not a priority, samples are accessed by first setting the index to read and then reading the value of SAMPLE_DATA",
@@ -405,7 +397,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": 8,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": False,
                         "descr": "Signals bigger than DATA_W bits are partition into DATA_W parts, this selects which part to read",
@@ -421,7 +412,6 @@ class iob_ila(iob_module):
                         "type": "R",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Value of the samples for the index set in ILA_INDEX and part set in ILA_SIGNAL_SELECT",
@@ -431,7 +421,6 @@ class iob_ila(iob_module):
                         "type": "R",
                         "n_bits": 16,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "Number of samples collected so far",
@@ -441,7 +430,6 @@ class iob_ila(iob_module):
                         "type": "R",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "The current value of signal (not necessarily stored in the buffer) for the specific ILA_SIGNAL_SELECT (not affected by delay)",
@@ -451,7 +439,6 @@ class iob_ila(iob_module):
                         "type": "R",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "The current value of trigger (the value directly from the trigger signal, not affected by trigger type, negation or delay)",
@@ -461,7 +448,6 @@ class iob_ila(iob_module):
                         "type": "R",
                         "n_bits": 32,
                         "rst_val": 0,
-                        "addr": -1,
                         "log2n_items": 0,
                         "autoreg": True,
                         "descr": "This value is affected by negation and trigger type. For continuous triggers, returns if the trigger has been activated. For single triggers, returns whether the signal is currently asserted",
@@ -471,7 +457,6 @@ class iob_ila(iob_module):
                         "type": "W",
                         "n_bits": "DATA_W",
                         "rst_val": 0,
-                        "addr": -1,
                         # Need to have enough items for the Monitor PFSM swreg address space
                         # Size is the sum of the log2n_items of the following PFSM regs:
                         # MEMORY (INPUT_W+STATE_W) + MEM_WORD_SELECT (1) + SOFTRESET (1)
