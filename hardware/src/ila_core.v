@@ -414,7 +414,7 @@ module ila_core #(
       .clk_i(clk_i),
       .arst_i(arst_i),
       .cke_i(cke_i),
-      .rst_i(SOFT_RESET),
+      .rst_i(rst_int),
       .data_i ((dma_tvalid_o & ~dma_tready_i) | (data_out_valid & dma_tready_i)),
       .data_o(dma_tvalid_o)
    );
