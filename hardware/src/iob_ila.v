@@ -99,8 +99,6 @@ module iob_ila #(
     .INDEX_wready_i(INDEX_ready),
     .SIGNAL_SELECT_wen_o(SIGNAL_SELECT_wen),
     .SIGNAL_SELECT_wready_i(SIGNAL_SELECT_ready),
-    .iob_ready_nxt_o(iob_ready_nxt_o),
-    .iob_rvalid_nxt_o(iob_rvalid_nxt_o),
      .iob_avalid_i(slaves_req[`AVALID(0)]),
      .iob_addr_i(slaves_req[`ADDRESS(0,`IOB_ILA_SWREG_ADDR_W)]),
      .iob_wdata_i(slaves_req[`WDATA(0)]),
