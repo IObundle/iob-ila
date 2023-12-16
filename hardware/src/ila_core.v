@@ -48,7 +48,7 @@ module ila_core #(
    input arst_i,
 
    // Monitor IOb-Native interface
-   input [1-1:0]                      monitor_avalid_i,
+   input [1-1:0]                      monitor_valid_i,
    input [`IOB_PFSM_SWREG_ADDR_W-1:0] monitor_addr_i,
    input [DATA_W-1:0]                 monitor_wdata_i,
    input [(DATA_W/8)-1:0]             monitor_wstrb_i,
@@ -94,7 +94,7 @@ module ila_core #(
             .clk_i(sampling_clk),
             .arst_i(arst_i),
             .cke_i(cke_i),
-            .iob_avalid_i(monitor_avalid_i),
+            .iob_valid_i(monitor_valid_i),
             .iob_addr_i(monitor_addr_i),
             .iob_wdata_i(monitor_wdata_i),
             .iob_wstrb_i(monitor_wstrb_i),
@@ -272,8 +272,7 @@ module ila_core #(
    wire [`IOB_ILA_INDEX_W-1:0] index_reg_i = INDEX_wen ? INDEX_wdata : index_reg_o+1;
    iob_reg_e #(
      .DATA_W(`IOB_ILA_INDEX_W),
-     .RST_VAL({`IOB_ILA_INDEX_W{1'b0}}),
-     .CLKEDGE("posedge")
+     .RST_VAL({`IOB_ILA_INDEX_W{1'b0}})
    ) INDEX_datareg (
      .clk_i  (clk_i),
      .cke_i  (cke_i),
@@ -294,8 +293,7 @@ module ila_core #(
    wire [`IOB_ILA_SIGNAL_SELECT_W-1:0] value_select_reg_i = value_select_wen ? value_select_wdata : next_value_select;
    iob_reg_e #(
      .DATA_W(`IOB_ILA_SIGNAL_SELECT_W),
-     .RST_VAL({`IOB_ILA_SIGNAL_SELECT_W{1'b0}}),
-     .CLKEDGE("posedge")
+     .RST_VAL({`IOB_ILA_SIGNAL_SELECT_W{1'b0}})
    ) SIGNAL_SELECT_datareg (
      .clk_i  (clk_i),
      .cke_i  (cke_i),
