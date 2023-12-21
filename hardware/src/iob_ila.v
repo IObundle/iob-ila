@@ -23,7 +23,7 @@ module iob_ila #(
    wire [`REQ_W-1:0] m_req;
    wire [`RESP_W-1:0] m_resp;
 
-   assign m_req[`AVALID(0)] = iob_avalid_i;
+   assign m_req[`VALID(0)] = iob_valid_i;
    assign m_req[`ADDRESS(0,`IOB_ILA_SWREG_ADDR_W)] = iob_addr_i;
    assign m_req[`WDATA(0)] = iob_wdata_i;
    assign m_req[`WSTRB(0)] = iob_wstrb_i;
@@ -99,9 +99,7 @@ module iob_ila #(
     .INDEX_wready_i(INDEX_ready),
     .SIGNAL_SELECT_wen_o(SIGNAL_SELECT_wen),
     .SIGNAL_SELECT_wready_i(SIGNAL_SELECT_ready),
-    .iob_ready_nxt_o(iob_ready_nxt_o),
-    .iob_rvalid_nxt_o(iob_rvalid_nxt_o),
-     .iob_avalid_i(slaves_req[`AVALID(0)]),
+     .iob_valid_i(slaves_req[`VALID(0)]),
      .iob_addr_i(slaves_req[`ADDRESS(0,`IOB_ILA_SWREG_ADDR_W)]),
      .iob_wdata_i(slaves_req[`WDATA(0)]),
      .iob_wstrb_i(slaves_req[`WSTRB(0)]),
@@ -156,7 +154,7 @@ module iob_ila #(
       .arst_i(arst_i),
 
       // Monitor IOb-Native interface
-      .monitor_avalid_i(slaves_req[`AVALID(1)]),
+      .monitor_valid_i(slaves_req[`VALID(1)]),
       .monitor_addr_i(slaves_req[`ADDRESS(1,`IOB_PFSM_SWREG_ADDR_W)]),
       .monitor_wdata_i(slaves_req[`WDATA(1)]),
       .monitor_wstrb_i(slaves_req[`WSTRB(1)]),
