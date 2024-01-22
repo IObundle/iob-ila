@@ -11,10 +11,6 @@ module iob_ila #(
    `include "iob_ila_io.vs"
 );
 
-   //Dummy iob_ready_nxt_o and iob_rvalid_nxt_o to be used in swreg (unused ports)
-   wire iob_ready_nxt_o;
-   wire iob_rvalid_nxt_o;
-
    //
    // SPLIT ILA REGS AND MONITOR REGS
    //
@@ -68,8 +64,6 @@ module iob_ila #(
   wire INDEX_ready = 1'b1;
   wire SIGNAL_SELECT_wen;
   wire SIGNAL_SELECT_ready = 1'b1;
-  wire iob_ready_nxt;
-  wire iob_rvalid_nxt;
 
   iob_ila_swreg_gen #(
 
