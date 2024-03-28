@@ -19,11 +19,17 @@
 
         // Other SOC peripherals go here
 
-        // Add this Node to device tree
+        // Add these Nodes to the device tree
+        // ILA: access only registers BEFORE Monitor and Version
         ILA0: ila@/*ILA0_ADDR_MACRO*/ {
             compatible = "iobundle,ila0";
-            reg = <0x/*ILA0_ADDR_MACRO*/ 0x100000>;
+            reg = <0x/*ILA0_ADDR_MACRO*/ 0x40000>;
         };
+        MONITOR0: monitor@/*/*ILA0_ADDR_MACRO*/+0x40000*/ {
+            compatible = "iobundle,pfsm0";
+            reg = <0x/*/*ILA0_ADDR_MACRO*/+0x40000*/ 0x40000>;
+        };
+
 
     };
 };
