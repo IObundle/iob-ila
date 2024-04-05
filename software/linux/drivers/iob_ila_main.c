@@ -22,7 +22,7 @@ static int iob_ila_remove(struct platform_device *);
 
 static ssize_t iob_ila_read(struct file *, char __user *, size_t, loff_t *);
 static ssize_t iob_ila_write(struct file *, const char __user *, size_t,
-                               loff_t *);
+                             loff_t *);
 static loff_t iob_ila_llseek(struct file *, loff_t, int);
 static int iob_ila_open(struct inode *, struct file *);
 static int iob_ila_release(struct inode *, struct file *);
@@ -89,8 +89,7 @@ static int iob_ila_probe(struct platform_device *pdev) {
   iob_ila_data.regsize = resource_size(res);
 
   // Alocate char device
-  result =
-      alloc_chrdev_region(&iob_ila_data.devnum, 0, 1, IOB_ILA_DRIVER_NAME);
+  result = alloc_chrdev_region(&iob_ila_data.devnum, 0, 1, IOB_ILA_DRIVER_NAME);
   if (result) {
     pr_err("%s: Failed to allocate device number!\n", IOB_ILA_DRIVER_NAME);
     goto r_alloc_region;
@@ -106,16 +105,15 @@ static int iob_ila_probe(struct platform_device *pdev) {
 
   // Create device class // todo: make a dummy driver just to create and own the
   // class: https://stackoverflow.com/a/16365027/8228163
-  if ((iob_ila_data.class =
-           class_create(THIS_MODULE, IOB_ILA_DRIVER_CLASS)) == NULL) {
+  if ((iob_ila_data.class = class_create(THIS_MODULE, IOB_ILA_DRIVER_CLASS)) ==
+      NULL) {
     printk("Device class can not be created!\n");
     goto r_class;
   }
 
   // Create device file
-  iob_ila_data.device =
-      device_create(iob_ila_data.class, NULL, iob_ila_data.devnum, NULL,
-                    IOB_ILA_DRIVER_NAME);
+  iob_ila_data.device = device_create(
+      iob_ila_data.class, NULL, iob_ila_data.devnum, NULL, IOB_ILA_DRIVER_NAME);
   if (iob_ila_data.device == NULL) {
     printk("Can not create device file!\n");
     goto r_device;
@@ -195,7 +193,7 @@ static int iob_ila_release(struct inode *inode, struct file *file) {
 }
 
 static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
-                              loff_t *ppos) {
+                            loff_t *ppos) {
   int size = 0;
   u32 value = 0;
 
@@ -205,37 +203,43 @@ static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_SAMPLE_DATA_ADDR,
                               IOB_ILA_SAMPLE_DATA_W);
     size = (IOB_ILA_SAMPLE_DATA_W >> 3); // bit to bytes
-    pr_info("[Driver] Read SAMPLE_DATA!\n");
+    pr_info("[Driver] %s: Read SAMPLE_DATA: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_N_SAMPLES_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_N_SAMPLES_ADDR,
                               IOB_ILA_N_SAMPLES_W);
     size = (IOB_ILA_N_SAMPLES_W >> 3); // bit to bytes
-    pr_info("[Driver] Read N_SAMPLES!\n");
+    pr_info("[Driver] %s: Read N_SAMPLES: 0x%x\n", IOB_PFSM_DRIVER_NAME, value);
     break;
   case IOB_ILA_CURRENT_DATA_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_DATA_ADDR,
                               IOB_ILA_CURRENT_DATA_W);
     size = (IOB_ILA_CURRENT_DATA_W >> 3); // bit to bytes
-    pr_info("[Driver] Read CURRENT_DATA!\n");
+    pr_info("[Driver] %s: Read CURRENT_DATA: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_CURRENT_TRIGGERS_ADDR:
-    value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_TRIGGERS_ADDR,
-                              IOB_ILA_CURRENT_TRIGGERS_W);
+    value =
+        iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_TRIGGERS_ADDR,
+                          IOB_ILA_CURRENT_TRIGGERS_W);
     size = (IOB_ILA_CURRENT_TRIGGERS_W >> 3); // bit to bytes
-    pr_info("[Driver] Read CURRENT_TRIGGERS!\n");
+    pr_info("[Driver] %s: Read CURRENT_TRIGGERS: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_CURRENT_ACTIVE_TRIGGERS_ADDR:
-    value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_ACTIVE_TRIGGERS_ADDR,
+    value = iob_data_read_reg(iob_ila_data.regbase,
+                              IOB_ILA_CURRENT_ACTIVE_TRIGGERS_ADDR,
                               IOB_ILA_CURRENT_ACTIVE_TRIGGERS_W);
     size = (IOB_ILA_CURRENT_ACTIVE_TRIGGERS_W >> 3); // bit to bytes
-    pr_info("[Driver] Read CURRENT_ACTIVE_TRIGGERS!\n");
+    pr_info("[Driver] %s: Read CURRENT_ACTIVE_TRIGGERS: 0x%x\n",
+            IOB_PFSM_DRIVER_NAME, value);
     break;
   case IOB_ILA_VERSION_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_VERSION_ADDR,
                               IOB_ILA_VERSION_W);
     size = (IOB_ILA_VERSION_W >> 3); // bit to bytes
-    pr_info("[Driver] Read version!\n");
+    pr_info("[Driver] %s: Read VERSION: 0x%x\n", IOB_PFSM_DRIVER_NAME, value);
     break;
   default:
     // invalid address - no bytes read
@@ -253,7 +257,7 @@ static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
 }
 
 static ssize_t iob_ila_write(struct file *file, const char __user *buf,
-                               size_t count, loff_t *ppos) {
+                             size_t count, loff_t *ppos) {
   int size = 0;
   u32 value = 0;
 
@@ -264,7 +268,8 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_MISCELLANEOUS_ADDR,
                        IOB_ILA_MISCELLANEOUS_W);
-    pr_info("[Driver] MISCELLANEOUS iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: MISCELLANEOUS iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_TRIGGER_TYPE_ADDR:
     size = (IOB_ILA_TRIGGER_TYPE_W >> 3); // bit to bytes
@@ -272,7 +277,8 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_TRIGGER_TYPE_ADDR,
                        IOB_ILA_TRIGGER_TYPE_W);
-    pr_info("[Driver] TRIGGER_TYPE iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: TRIGGER_TYPE iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_TRIGGER_NEGATE_ADDR:
     size = (IOB_ILA_TRIGGER_NEGATE_W >> 3); // bit to bytes
@@ -280,7 +286,8 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_TRIGGER_NEGATE_ADDR,
                        IOB_ILA_TRIGGER_NEGATE_W);
-    pr_info("[Driver] TRIGGER_NEGATE iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: TRIGGER_NEGATE iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_TRIGGER_MASK_ADDR:
     size = (IOB_ILA_TRIGGER_MASK_W >> 3); // bit to bytes
@@ -288,7 +295,8 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_TRIGGER_MASK_ADDR,
                        IOB_ILA_TRIGGER_MASK_W);
-    pr_info("[Driver] TRIGGER_MASK iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: TRIGGER_MASK iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME,
+            value);
     break;
   case IOB_ILA_INDEX_ADDR:
     size = (IOB_ILA_INDEX_W >> 3); // bit to bytes
@@ -296,7 +304,7 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_INDEX_ADDR,
                        IOB_ILA_INDEX_W);
-    pr_info("[Driver] INDEX iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: INDEX iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME, value);
     break;
   case IOB_ILA_SIGNAL_SELECT_ADDR:
     size = (IOB_ILA_SIGNAL_SELECT_W >> 3); // bit to bytes
@@ -304,18 +312,21 @@ static ssize_t iob_ila_write(struct file *file, const char __user *buf,
       return -EFAULT;
     iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_SIGNAL_SELECT_ADDR,
                        IOB_ILA_SIGNAL_SELECT_W);
-    pr_info("[Driver] SIGNAL_SELECT iob_ila: 0x%x\n", value);
+    pr_info("[Driver] %s: SIGNAL_SELECT iob_ila: 0x%x\n", IOB_ILA_DRIVER_NAME,
+            value);
     break;
-  case IOB_ILA_DUMMY_MONITOR_REG_RANGE_ADDR:
-    size = (IOB_ILA_DUMMY_MONITOR_REG_RANGE_W >> 3); // bit to bytes
-    if (read_user_data(buf, size, &value))
-      return -EFAULT;
-    iob_data_write_reg(iob_ila_data.regbase, value, IOB_ILA_DUMMY_MONITOR_REG_RANGE_ADDR,
-                       IOB_ILA_DUMMY_MONITOR_REG_RANGE_W);
-    pr_info("[Driver] DUMMY_MONITOR_REG_RANGE iob_ila: 0x%x\n", value);
-    break;
+  // case IOB_ILA_DUMMY_MONITOR_REG_RANGE_ADDR:
+  //   size = (IOB_ILA_DUMMY_MONITOR_REG_RANGE_W >> 3); // bit to bytes
+  //   if (read_user_data(buf, size, &value))
+  //     return -EFAULT;
+  //   iob_data_write_reg(iob_ila_data.regbase, value,
+  //   IOB_ILA_DUMMY_MONITOR_REG_RANGE_ADDR,
+  //                      IOB_ILA_DUMMY_MONITOR_REG_RANGE_W);
+  //   pr_info("[Driver] %s: DUMMY_MONITOR_REG_RANGE iob_ila: 0x%x\n",
+  //   IOB_ILA_DRIVER_NAME, value); break;
   default:
-    pr_info("[Driver] Invalid write address 0x%x\n", (unsigned int)*ppos);
+    pr_info("[Driver] %s: Invalid write address 0x%x\n", IOB_ILA_DRIVER_NAME,
+            (unsigned int)*ppos);
     // invalid address - no bytes written
     return 0;
   }
