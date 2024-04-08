@@ -203,20 +203,20 @@ static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_SAMPLE_DATA_ADDR,
                               IOB_ILA_SAMPLE_DATA_W);
     size = (IOB_ILA_SAMPLE_DATA_W >> 3); // bit to bytes
-    pr_info("[Driver] %s: Read SAMPLE_DATA: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+    pr_info("[Driver] %s: Read SAMPLE_DATA: 0x%x\n", IOB_ILA_DRIVER_NAME,
             value);
     break;
   case IOB_ILA_N_SAMPLES_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_N_SAMPLES_ADDR,
                               IOB_ILA_N_SAMPLES_W);
     size = (IOB_ILA_N_SAMPLES_W >> 3); // bit to bytes
-    pr_info("[Driver] %s: Read N_SAMPLES: 0x%x\n", IOB_PFSM_DRIVER_NAME, value);
+    pr_info("[Driver] %s: Read N_SAMPLES: 0x%x\n", IOB_ILA_DRIVER_NAME, value);
     break;
   case IOB_ILA_CURRENT_DATA_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_DATA_ADDR,
                               IOB_ILA_CURRENT_DATA_W);
     size = (IOB_ILA_CURRENT_DATA_W >> 3); // bit to bytes
-    pr_info("[Driver] %s: Read CURRENT_DATA: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+    pr_info("[Driver] %s: Read CURRENT_DATA: 0x%x\n", IOB_ILA_DRIVER_NAME,
             value);
     break;
   case IOB_ILA_CURRENT_TRIGGERS_ADDR:
@@ -224,7 +224,7 @@ static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
         iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_CURRENT_TRIGGERS_ADDR,
                           IOB_ILA_CURRENT_TRIGGERS_W);
     size = (IOB_ILA_CURRENT_TRIGGERS_W >> 3); // bit to bytes
-    pr_info("[Driver] %s: Read CURRENT_TRIGGERS: 0x%x\n", IOB_PFSM_DRIVER_NAME,
+    pr_info("[Driver] %s: Read CURRENT_TRIGGERS: 0x%x\n", IOB_ILA_DRIVER_NAME,
             value);
     break;
   case IOB_ILA_CURRENT_ACTIVE_TRIGGERS_ADDR:
@@ -233,13 +233,13 @@ static ssize_t iob_ila_read(struct file *file, char __user *buf, size_t count,
                               IOB_ILA_CURRENT_ACTIVE_TRIGGERS_W);
     size = (IOB_ILA_CURRENT_ACTIVE_TRIGGERS_W >> 3); // bit to bytes
     pr_info("[Driver] %s: Read CURRENT_ACTIVE_TRIGGERS: 0x%x\n",
-            IOB_PFSM_DRIVER_NAME, value);
+            IOB_ILA_DRIVER_NAME, value);
     break;
   case IOB_ILA_VERSION_ADDR:
     value = iob_data_read_reg(iob_ila_data.regbase, IOB_ILA_VERSION_ADDR,
                               IOB_ILA_VERSION_W);
     size = (IOB_ILA_VERSION_W >> 3); // bit to bytes
-    pr_info("[Driver] %s: Read VERSION: 0x%x\n", IOB_PFSM_DRIVER_NAME, value);
+    pr_info("[Driver] %s: Read VERSION: 0x%x\n", IOB_ILA_DRIVER_NAME, value);
     break;
   default:
     // invalid address - no bytes read
