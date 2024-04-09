@@ -31,11 +31,13 @@ module iob_ila #(
    wire [2*`REQ_W-1:0] slaves_req;
    wire [2*`RESP_W-1:0] slaves_resp;
 
+   // Use 2nd most significant bit to choose between ILA and MONITOR
+   // REQ_W-3: ila_addr[20-2]
    iob_split #(
       .ADDR_W  (ADDR_W),
       .DATA_W  (DATA_W),
       .N_SLAVES(2),
-      .P_SLAVES(`REQ_W-2)
+      .P_SLAVES(`REQ_W-3) 
    ) swreg_split (
       .clk_i   (clk_i),
       .arst_i  (arst_i),
